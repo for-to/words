@@ -1,0 +1,2897 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="遮词">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>遮词 · 背单词</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f5f1e8; --ink:#211d17; --ink2:#7a7163; --line:#e4dccd;
+  --card:#fffdf7; --red:#b8402f; --green:#2c6e54;
+  --shadow:0 12px 30px -14px rgba(70,52,20,.45);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#141210; --ink:#efe8db; --ink2:#9c9282; --line:#332d25;
+    --card:#262119; --red:#d4685a; --green:#5aa886;
+    --shadow:0 12px 30px -14px rgba(0,0,0,.85);
+  }
+}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit}
+.app{position:relative;height:100vh;height:100dvh;overflow:hidden}
+.view{position:absolute;inset:0;display:none;flex-direction:column;user-select:none;-webkit-user-select:none}
+.view.on{display:flex}
+
+/* ---------- 通用 ---------- */
+.hd{display:flex;align-items:center;gap:6px;padding:calc(14px + env(safe-area-inset-top)) 16px 6px;flex:none}
+.hd-t{flex:1;font-size:15px;font-weight:600;letter-spacing:.02em}
+.hd-t.center{text-align:center}
+.icon{width:40px;height:40px;border:none;background:transparent;color:var(--ink2);font-size:22px;line-height:1;display:grid;place-items:center;border-radius:12px;flex:none}
+.icon:active{background:rgba(128,110,80,.12)}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px calc(28px + env(safe-area-inset-bottom))}
+.sec-t{margin:24px 2px 10px;font-size:12px;letter-spacing:.16em;color:var(--ink2)}
+.empty{padding:34px 6px;color:var(--ink2);font-size:14px;text-align:center;line-height:1.8}
+
+/* ---------- 首页 ---------- */
+.hero{padding:22px 2px 18px}
+.hero-num{font-family:Georgia,"Times New Roman",serif;font-size:60px;line-height:1;letter-spacing:-2px}
+.hero-lbl{margin-top:10px;color:var(--ink2);font-size:13px}
+.hero-lbl b{color:var(--ink);font-weight:600}
+.resume{display:flex;align-items:center;width:100%;gap:10px;padding:15px 16px;border-radius:16px;border:none;background:var(--ink);color:var(--bg);margin-bottom:14px;text-align:left}
+.resume b{font-size:15px;font-weight:600}
+.resume span{margin-left:auto;font-size:12.5px;opacity:.72}
+.opt{display:flex;align-items:center;gap:13px;width:100%;padding:15px;border:1px solid var(--line);background:var(--card);border-radius:16px;margin-bottom:10px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.opt:active{transform:scale(.986)}
+.opt-i{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--bg);font-size:16px;color:var(--ink2);flex:none}
+.opt-b{flex:1;min-width:0}
+.opt-b b{display:block;font-size:15.5px;font-weight:600}
+.opt-b i{display:block;font-style:normal;font-size:12.5px;color:var(--ink2);margin-top:3px}
+.opt-a{color:var(--ink2);font-size:20px;flex:none;opacity:.7}
+.row{display:flex;align-items:center;width:100%;padding:14px 15px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;text-align:left}
+.row:active{transform:scale(.99)}
+.row b{font-size:15px;font-weight:600}
+.row i{font-style:normal;font-size:12.5px;color:var(--ink2);margin-left:9px}
+.row-a{margin-left:auto;color:var(--ink2);font-size:13px}
+.foot-note{margin:26px 2px 0;font-size:12px;color:var(--ink2);opacity:.8;line-height:1.7}
+
+/* ---------- 背诵 ---------- */
+.top{position:relative;display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top)) 10px 4px;flex:none}
+.top-t{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12.5px;color:var(--ink2);letter-spacing:.03em;white-space:nowrap;pointer-events:none}
+.top-r{display:flex;align-items:center;gap:2px}
+.tx{border:none;background:transparent;color:var(--ink2);font-size:12.5px;padding:0 6px;height:40px;border-radius:10px;letter-spacing:.02em}
+.tx:active{background:rgba(128,110,80,.12)}
+.bar{height:2px;background:var(--line);margin:4px 18px 0;border-radius:2px;overflow:hidden;flex:none}
+.bar i{display:block;height:100%;width:0;background:var(--ink);transition:width .28s ease}
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:6px 98px 0 18px;overflow-y:auto}
+.wordarea{flex:none;display:flex;flex-direction:column;align-items:center;padding:0 0 52px}
+.wordwrap{width:100%;overflow:hidden;display:flex;justify-content:center}
+.word{font-family:Georgia,"Times New Roman","Songti SC",serif;font-size:54px;line-height:1.12;letter-spacing:-.6px;white-space:nowrap}
+.ph{margin-top:11px;height:17px;font-size:13.5px;color:var(--ink2);letter-spacing:.02em}
+.paperwrap{flex:none;padding:0 2px 2px}
+.paper{
+  position:relative;width:100%;min-height:170px;border-radius:14px;
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);
+  transform:rotate(-.45deg);display:flex;align-items:center;justify-content:center;
+  padding:26px 22px;transition:transform .18s ease,border-color .18s ease;
+}
+.paper:active{transform:rotate(-.45deg) scale(.992)}
+.paper::after{
+  content:"";position:absolute;top:-8px;left:50%;width:56px;height:15px;margin-left:-28px;
+  background:rgba(202,180,132,.5);border-radius:2px;transform:rotate(-2deg);
+  box-shadow:0 1px 2px rgba(0,0,0,.05);pointer-events:none;
+}
+.paper.missed{border-color:rgba(184,64,47,.38)}
+.cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:13px;background:var(--card);color:var(--ink2);font-size:13.5px;letter-spacing:.18em;transition:opacity .2s ease,transform .2s ease}
+.cover span{opacity:.62}
+.paper.rev .cover{opacity:0;transform:translateY(-8px);pointer-events:none}
+.mean{font-size:21px;line-height:1.62;text-align:center;opacity:0;transform:translateY(7px);transition:opacity .24s ease,transform .24s ease}
+.paper.rev .mean{opacity:1;transform:none}
+.hint{height:20px;margin-top:9px;font-size:12px;color:var(--ink2);text-align:center;letter-spacing:.03em;flex:none}
+.foot-r{margin-left:auto;padding-bottom:4px;text-align:right;color:var(--ink2);font-size:12px;line-height:1.7}
+.foot-r.rd{color:var(--red)}
+.rail{position:absolute;right:10px;top:58%;transform:translateY(-50%);width:76px;display:flex;flex-direction:column;gap:10px;z-index:3}
+.btn{width:100%;border-radius:15px;border:none;transition:transform .08s ease,opacity .15s ease}
+.btn:active{transform:scale(.96)}
+.btn.miss{height:58px;background:var(--card);border:1.5px solid var(--red);color:var(--red);font-size:16px;font-weight:600;letter-spacing:.06em;box-shadow:0 8px 20px -14px rgba(40,25,10,.7)}
+.btn.miss[disabled]{opacity:.4;border-color:var(--line);color:var(--ink2);box-shadow:none}
+.btn.next{height:66px;background:var(--ink);color:var(--bg);font-size:17px;font-weight:700;letter-spacing:.04em;box-shadow:0 12px 26px -14px rgba(0,0,0,.6)}
+.rail-cap{margin-top:1px;text-align:center;font-size:11px;line-height:14px;min-height:14px;color:var(--red);letter-spacing:.02em}
+
+/* ---------- 结算 ---------- */
+.stat3{display:flex;gap:9px;margin:14px 0 4px}
+.stat3 > div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center}
+.stat3 b{display:block;font-family:Georgia,serif;font-size:26px;line-height:1.1}
+.stat3 i{display:block;font-style:normal;font-size:11.5px;color:var(--ink2);margin-top:4px}
+.stat3 .rd{color:var(--red)}
+.mrow{display:flex;align-items:baseline;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.mrow b{font-family:Georgia,serif;font-size:16.5px;font-weight:600;flex:none;max-width:46%}
+.mrow span{color:var(--ink2);font-size:13px;line-height:1.5;flex:1;text-align:right}
+.mrow .cnt{font-style:normal;font-size:11px;color:var(--red);background:rgba(184,64,47,.09);border-radius:6px;padding:2px 6px;margin-left:8px;flex:none}
+.x{width:26px;height:26px;border:none;background:transparent;color:var(--ink2);font-size:15px;flex:none;opacity:.55}
+.bottom{flex:none;display:flex;flex-direction:column;gap:9px;padding:12px 18px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
+.abtn{width:100%;height:52px;border-radius:14px;border:1px solid transparent;font-size:16px;font-weight:600;transition:transform .08s ease}
+.abtn:active{transform:scale(.985)}
+.abtn.pri{background:var(--ink);color:var(--bg)}
+.abtn.sec{background:var(--card);color:var(--ink);border-color:var(--line)}
+.abtn.txt{background:transparent;color:var(--ink2);height:40px;font-weight:400;font-size:14px}
+.abtn.danger{background:transparent;color:var(--red);border-color:var(--red)}
+.abtn[disabled]{opacity:.4}
+
+/* ---------- 设置 ---------- */
+.seg{display:flex;gap:8px;margin-bottom:6px}
+.seg button{flex:1;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:15px}
+.seg button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tip{margin:0 2px 10px;font-size:12.5px;color:var(--ink2);line-height:1.7}
+.tip code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px}
+textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:13.5px;line-height:1.7;resize:vertical;margin-bottom:12px;user-select:text;-webkit-user-select:text}
+
+/* ---------- 弹层 ---------- */
+.modal{position:fixed;inset:0;z-index:200;visibility:hidden;opacity:0;transition:opacity .2s ease,visibility 0s .26s}
+.modal.on{visibility:visible;opacity:1;transition:opacity .2s ease,visibility 0s}
+.modal-mask{position:absolute;inset:0;background:rgba(20,15,8,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:22px 22px 0 0;padding:24px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);box-shadow:0 -12px 40px rgba(0,0,0,.18)}
+.modal.on .sheet{transform:none}
+.sheet-t{font-size:17px;font-weight:700;margin-bottom:8px;letter-spacing:.01em}
+.sheet-b{font-size:13.5px;color:var(--ink2);line-height:1.75;white-space:pre-line;margin-bottom:20px}
+.sheet-a{display:flex;flex-direction:column;gap:9px}
+
+/* ---------- toast ---------- */.toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:rgba(28,24,18,.93);color:#f5f1e8;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:99;max-width:82vw;text-align:center;line-height:1.4}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= 首页 ================= -->
+  <section class="view on" id="v-home">
+    <div class="hd">
+      <div class="hd-t">遮词</div>
+      <button class="icon" id="btn-set" aria-label="设置">⚙</button>
+    </div>
+    <div class="scroll">
+      <div class="hero">
+        <div class="hero-num" id="h-total">0</div>
+        <div class="hero-lbl">个词 · 错题 <b id="h-wrong">0</b> · 今日已背 <b id="h-today">0</b></div>
+      </div>
+      <button class="resume" id="btn-resume" style="display:none"></button>
+      <button class="opt" id="btn-order">
+        <span class="opt-i">↓</span>
+        <span class="opt-b"><b>顺序背诵</b><i id="order-sub">从头开始，每个词只出现一次</i></span>
+        <span class="opt-a">›</span>
+      </button>
+      <button class="opt" id="btn-shuffle">
+        <span class="opt-i">⤨</span>
+        <span class="opt-b"><b>全书乱序一遍</b><i>打乱顺序，每个词只出现一次</i></span>
+        <span class="opt-a">›</span>
+      </button>
+      <button class="opt" id="btn-wrong-mode">
+        <span class="opt-i">✗</span>
+        <span class="opt-b"><b>错题本复习</b><i id="wrong-sub">暂无错题</i></span>
+        <span class="opt-a">›</span>
+      </button>
+      <div class="foot-note">进度自动存在这台设备上，关掉也不会丢。</div>
+    </div>
+  </section>
+
+  <!-- ================= 背诵 ================= -->
+  <section class="view" id="v-study">
+    <div class="top">
+      <button class="icon" id="btn-back" aria-label="返回">‹</button>
+      <div class="top-t" id="s-title">第 1 组 · 1/30</div>
+      <div class="top-r">
+        <button class="icon" id="btn-undo" aria-label="撤回" style="font-size:19px">↩</button>
+        <button class="tx" id="btn-reset">重置</button>
+      </div>
+    </div>
+    <div class="bar"><i id="s-bar"></i></div>
+    <div class="stage">
+      <div class="wordarea">
+        <div class="wordwrap"><div class="word" id="s-word">abandon</div></div>
+        <div class="ph" id="s-ph"></div>
+      </div>
+      <div class="paperwrap">
+        <div class="paper" id="paper">
+          <div class="cover"><span>轻点掀开</span></div>
+          <div class="mean" id="mean"></div>
+        </div>
+      </div>
+      <div class="hint" id="s-hint"></div>
+    </div>
+    <div class="rail">
+      <button class="btn miss" id="btn-miss">不会</button>
+      <button class="btn next" id="btn-next">会了</button>
+      <div class="rail-cap" id="s-count"></div>
+    </div>
+  </section>
+
+  <!-- ================= 结算 ================= -->
+  <section class="view" id="v-result">
+    <div class="hd">
+      <button class="icon" id="r-home" aria-label="返回">‹</button>
+      <div class="hd-t center" id="r-title">本轮结束</div>
+      <div style="width:40px;flex:none"></div>
+    </div>
+    <div class="scroll">
+      <div class="stat3">
+        <div><b id="r-total">0</b><i>本轮词数</i></div>
+        <div><b id="r-known">0</b><i>会了</i></div>
+        <div><b id="r-miss" class="rd">0</b><i>不会</i></div>
+      </div>
+      <div class="sec-t">本轮不会的词</div>
+      <div id="r-list"></div>
+    </div>
+    <div class="bottom" id="r-actions"></div>
+  </section>
+
+  <!-- ================= 错题本 ================= -->
+  <section class="view" id="v-wrong">
+    <div class="hd">
+      <button class="icon" id="w-back" aria-label="返回">‹</button>
+      <div class="hd-t center">错题本 <span id="w-count" style="color:var(--ink2);font-weight:400">0</span></div>
+      <button class="tx" id="w-clear">清空</button>
+    </div>
+    <div class="scroll"><div id="w-list"></div></div>
+    <div class="bottom"><button class="abtn pri" id="w-start">开始复习</button></div>
+  </section>
+
+  <!-- ================= 设置 ================= -->
+  <section class="view" id="v-set">
+    <div class="hd">
+      <button class="icon" id="set-back" aria-label="返回">‹</button>
+      <div class="hd-t center">设置</div>
+      <div style="width:40px;flex:none"></div>
+    </div>
+    <div class="scroll">
+      <div class="sec-t">替换词库</div>
+      <p class="tip">每行一个词：<code>abandon 放弃；抛弃</code>　也支持从 Excel 直接粘贴（单词和释义之间用 Tab）。</p>
+      <textarea id="imp" placeholder="abandon&#9;放弃；抛弃&#10;ability&#9;能力&#10;&#10;也可以直接：abandon 放弃；抛弃"></textarea>
+      <button class="abtn pri" id="imp-btn">导入并替换词库</button>
+      <div class="sec-t">备份 / 换设备</div>
+      <p class="tip">换网址或换手机时，先导出备份，到新地址粘贴恢复。词库不用管，只有进度和错题。</p>
+      <textarea id="bak" placeholder="点「导出备份」会生成一串文本，复制保存好（可以发给自己）"></textarea>
+      <button class="abtn pri" id="bak-exp">导出备份</button>
+      <div style="height:9px"></div>
+      <button class="abtn sec" id="bak-imp">从备份恢复</button>
+      <div class="sec-t">其他</div>
+      <button class="abtn danger" id="reset-btn">清空全部进度（含错题本）</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-mask" id="m-mask"></div>
+  <div class="sheet">
+    <div class="sheet-t" id="m-title"></div>
+    <div class="sheet-b" id="m-body"></div>
+    <div class="sheet-a" id="m-acts"></div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   词库：把你的单词贴到 DEMO 里即可（或页面里 设置 → 替换词库）
+   每行一个：{w:'单词', ph:'音标(可省)', m:'中文释义'}
+   ========================================================== */
+const DEMO = [
+  {w:"for",m:"为了……、对于……、因为"},
+  {w:"change",m:"改变、零钱"},
+  {w:"take",m:"拿走、携带"},
+  {w:"care",m:"关心、在意"},
+  {w:"in",m:"在……内"},
+  {w:"look",m:"看"},
+  {w:"promise",m:"承诺、保证"},
+  {w:"decide",m:"决定"},
+  {w:"make",m:"制作、使得"},
+  {w:"on",m:"在……上、继续着"},
+  {w:"courage",m:"勇气"},
+  {w:"hope",m:"希望"},
+  {w:"interest",m:"兴趣、利益"},
+  {w:"surprise",m:"惊讶、使感到意外"},
+  {w:"work",m:"工作、作品、奏效"},
+  {w:"expect",m:"预料、期待"},
+  {w:"disappoint",m:"使失望"},
+  {w:"plan",m:"计划"},
+  {w:"with",m:"伴随"},
+  {w:"believe",m:"相信、认为"},
+  {w:"leave",m:"离开、把……留下"},
+  {w:"so",m:"因此"},
+  {w:"proud",m:"骄傲的"},
+  {w:"accept",m:"接受"},
+  {w:"find",m:"发现"},
+  {w:"realize",m:"意识到、实现"},
+  {w:"show",m:"展示、展现"},
+  {w:"since",m:"自从、因为、既然"},
+  {w:"act",m:"行为、行动、扮演"},
+  {w:"agree",m:"同意"},
+  {w:"as",m:"作为、如同、随着、因为"},
+  {w:"regret",m:"遗憾、后悔"},
+  {w:"though",m:"尽管、虽然"},
+  {w:"think",m:"认为"},
+  {w:"until",m:"直到"},
+  {w:"chance",m:"机会、可能性"},
+  {w:"experience",m:"经历、经验"},
+  {w:"hold",m:"握着、坚持、举办"},
+  {w:"if",m:"如果、是否"},
+  {w:"notice",m:"注意、通知"},
+  {w:"patience",m:"耐心"},
+  {w:"curious",m:"好奇的"},
+  {w:"give",m:"给"},
+  {w:"remember",m:"记得"},
+  {w:"satisfied",m:"满意的、满足的"},
+  {w:"but",m:"但是"},
+  {w:"confident",m:"自信的"},
+  {w:"discover",m:"探索、发现"},
+  {w:"imagine",m:"想象"},
+  {w:"or",m:"或者、否则"},
+  {w:"time",m:"时间、次数"},
+  {w:"even",m:"甚至"},
+  {w:"suggest",m:"建议、表明"},
+  {w:"anxious",m:"焦虑的"},
+  {w:"check",m:"检查"},
+  {w:"doubt",m:"怀疑"},
+  {w:"learn",m:"学习、了解"},
+  {w:"return",m:"回归、返回"},
+  {w:"unless",m:"除非……否则"},
+  {w:"worried",m:"担心的"},
+  {w:"angry",m:"生气的"},
+  {w:"before",m:"在……之前"},
+  {w:"by",m:"通过……方式、到……为止"},
+  {w:"know",m:"知道"},
+  {w:"run",m:"跑步、经营、运行"},
+  {w:"when",m:"当……时"},
+  {w:"choose",m:"选择"},
+  {w:"friend",m:"朋友"},
+  {w:"lose",m:"失去、失败"},
+  {w:"remind",m:"提醒"},
+  {w:"explain",m:"解释"},
+  {w:"feel",m:"感觉"},
+  {w:"live",m:"居住、生活、现场的"},
+  {w:"off",m:"关闭、不在原处"},
+  {w:"pleasant",m:"令人愉快的"},
+  {w:"strange",m:"奇怪的"},
+  {w:"because",m:"因为"},
+  {w:"comfortable",m:"舒服的"},
+  {w:"after",m:"在……之后"},
+  {w:"challenge",m:"挑战"},
+  {w:"effort",m:"努力"},
+  {w:"success",m:"成功"},
+  {w:"admit",m:"承认、允许进入"},
+  {w:"ashamed",m:"羞愧的"},
+  {w:"continue",m:"继续"},
+  {w:"enjoy",m:"享受"},
+  {w:"excited",m:"激动的"},
+  {w:"follow",m:"跟随"},
+  {w:"ignore",m:"忽视"},
+  {w:"lucky",m:"幸运的"},
+  {w:"pass",m:"经过、通过、传递"},
+  {w:"prepare",m:"准备"},
+  {w:"still",m:"仍然、静止的"},
+  {w:"and",m:"和"},
+  {w:"call",m:"打电话"},
+  {w:"carry",m:"携带"},
+  {w:"control",m:"控制"},
+  {w:"difference",m:"差异、不同"},
+  {w:"get",m:"得到"},
+  {w:"go",m:"去"},
+  {w:"hand",m:"手、传递"},
+  {w:"help",m:"帮助"},
+  {w:"once",m:"曾经、一次、一旦"},
+  {w:"over",m:"在……上方、结束"},
+  {w:"start",m:"开始"},
+  {w:"to",m:"目的、终点"},
+  {w:"up",m:"向上、完全"},
+  {w:"attend",m:"出席、照看"},
+  {w:"break",m:"间歇、打破"},
+  {w:"calm",m:"镇静的、平静"},
+  {w:"concern",m:"担心、忧虑、与……有关"},
+  {w:"confused",m:"困惑的"},
+  {w:"dream",m:"梦想"},
+  {w:"failure",m:"失败"},
+  {w:"hesitate",m:"犹豫"},
+  {w:"idea",m:"想法"},
+  {w:"inform",m:"通知、告诉"},
+  {w:"relief",m:"减轻痛苦、如释重负"},
+  {w:"turn",m:"翻转、回合"},
+  {w:"walk",m:"走路"},
+  {w:"write",m:"写"},
+  {w:"escape",m:"逃跑、逃避"},
+  {w:"forget",m:"忘记"},
+  {w:"offer",m:"提供、报价、录取通知"},
+  {w:"save",m:"保存、拯救、节省"},
+  {w:"strength",m:"力量、优势"},
+  {w:"support",m:"支持"},
+  {w:"argue",m:"论述、争论"},
+  {w:"describe",m:"描述"},
+  {w:"embarrassed",m:"尴尬的"},
+  {w:"express",m:"表达、快速的"},
+  {w:"move",m:"移动、使感动"},
+  {w:"normal",m:"正常的"},
+  {w:"pay",m:"支付、工资"},
+  {w:"play",m:"玩、扮演、演奏、戏剧"},
+  {w:"question",m:"问题、质问"},
+  {w:"relaxed",m:"放松的"},
+  {w:"serve",m:"服务"},
+  {w:"tired",m:"疲惫的"},
+  {w:"way",m:"道路、方式"},
+  {w:"ask",m:"询问、要求"},
+  {w:"at",m:"在某时某处、以……状态"},
+  {w:"come",m:"来"},
+  {w:"directly",m:"直接地"},
+  {w:"fear",m:"恐惧"},
+  {w:"free",m:"自由的、免费的、释放"},
+  {w:"miss",m:"错过、想念"},
+  {w:"open",m:"打开"},
+  {w:"order",m:"订单、命令、顺序、秩序"},
+  {w:"possible",m:"可能的"},
+  {w:"put",m:"放"},
+  {w:"puzzle",m:"谜、使困惑"},
+  {w:"reason",m:"理由、争辩"},
+  {w:"responsibility",m:"责任"},
+  {w:"right",m:"正确的、右边的、权利"},
+  {w:"serious",m:"严肃认真的、严重的"},
+  {w:"share",m:"分享"},
+  {w:"stop",m:"停止、阻止"},
+  {w:"struggle",m:"斗争、挣扎、奋斗"},
+  {w:"teach",m:"教"},
+  {w:"through",m:"通过、穿过"},
+  {w:"treat",m:"对待、款待、治疗"},
+  {w:"appear",m:"出现"},
+  {w:"drop",m:"掉落、下降、水滴"},
+  {w:"energy",m:"精力"},
+  {w:"grateful",m:"感激的"},
+  {w:"honest",m:"诚实的"},
+  {w:"love",m:"爱"},
+  {w:"meet",m:"遇见、会面"},
+  {w:"mind",m:"思维、想法、介意"},
+  {w:"nature",m:"自然、本性"},
+  {w:"pain",m:"痛苦"},
+  {w:"point",m:"点、重点、指"},
+  {w:"practical",m:"实际的、实用的"},
+  {w:"read",m:"读"},
+  {w:"receive",m:"收到"},
+  {w:"talk",m:"说"},
+  {w:"training",m:"训练"},
+  {w:"understand",m:"理解"},
+  {w:"advice",m:"建议"},
+  {w:"appreciate",m:"欣赏、感激"},
+  {w:"arrange",m:"安排"},
+  {w:"away",m:"远离、向远处"},
+  {w:"beyond",m:"超过、超出"},
+  {w:"bring",m:"带来"},
+  {w:"drive",m:"驾驶、驱使、动力"},
+  {w:"from",m:"从……起"},
+  {w:"gift",m:"礼物、天赋"},
+  {w:"good",m:"好的"},
+  {w:"happy",m:"快乐的"},
+  {w:"hard",m:"困难的、硬的、努力的"},
+  {w:"lesson",m:"课、教训"},
+  {w:"many",m:"很多"},
+  {w:"memory",m:"记忆、回忆"},
+  {w:"pressure",m:"压力"},
+  {w:"recognize",m:"认出、识别、认可"},
+  {w:"send",m:"发送"},
+  {w:"speak",m:"发言、说话"},
+  {w:"trust",m:"信任"},
+  {w:"warn",m:"警告"},
+  {w:"while",m:"当……时、而、尽管"},
+  {w:"wonder",m:"想知道、奇观"},
+  {w:"back",m:"背面、后面的、后退、支持"},
+  {w:"bear",m:"携带、承受、令人厌烦"},
+  {w:"collect",m:"收集、领取"},
+  {w:"create",m:"创造"},
+  {w:"end",m:"结束"},
+  {w:"excuse",m:"借口"},
+  {w:"honor",m:"荣誉、尊重、给予荣誉"},
+  {w:"however",m:"但是、然而、无论如何"},
+  {w:"impression",m:"印象"},
+  {w:"improve",m:"改进、提高"},
+  {w:"inspire",m:"激励、鼓舞、启发"},
+  {w:"lead",m:"带领、通往某处"},
+  {w:"like",m:"喜欢、像……一样"},
+  {w:"mean",m:"意思是、意味着、刻薄的"},
+  {w:"need",m:"需要"},
+  {w:"only",m:"仅仅"},
+  {w:"out",m:"出去、外面"},
+  {w:"persuade",m:"说服、劝说"},
+  {w:"refuse",m:"拒绝"},
+  {w:"respect",m:"尊重"},
+  {w:"see",m:"看"},
+  {w:"sense",m:"感觉"},
+  {w:"some",m:"一些"},
+  {w:"special",m:"特别的"},
+  {w:"study",m:"学习、研究"},
+  {w:"word",m:"说话、单词"},
+  {w:"achieve",m:"取得成功、实现目标"},
+  {w:"admire",m:"钦佩、羡慕、欣赏"},
+  {w:"although",m:"尽管"},
+  {w:"any",m:"任何"},
+  {w:"brave",m:"勇敢的"},
+  {w:"catch",m:"抓住"},
+  {w:"consider",m:"考虑、认为"},
+  {w:"delight",m:"高兴"},
+  {w:"demand",m:"要求"},
+  {w:"develop",m:"发展"},
+  {w:"fall",m:"掉落、秋天"},
+  {w:"manage",m:"管理、设法做到"},
+  {w:"necessary",m:"必要的"},
+  {w:"performance",m:"表演"},
+  {w:"sad",m:"悲伤的"},
+  {w:"skill",m:"技术、技能"},
+  {w:"stand",m:"站立、代表、容忍"},
+  {w:"therefore",m:"因此"},
+  {w:"trouble",m:"麻烦"},
+  {w:"use",m:"使用、用处"},
+  {w:"watch",m:"观看、手表"},
+  {w:"around",m:"周围、环绕"},
+  {w:"avoid",m:"避免"},
+  {w:"blame",m:"责备"},
+  {w:"comment",m:"评论"},
+  {w:"confirm",m:"证实、确认"},
+  {w:"desire",m:"渴望"},
+  {w:"difficult",m:"困难的"},
+  {w:"easy",m:"容易的"},
+  {w:"judge",m:"判断、法官、裁判"},
+  {w:"keep",m:"保持"},
+  {w:"place",m:"放置、地点"},
+  {w:"protect",m:"保护"},
+  {w:"push",m:"推"},
+  {w:"report",m:"报告"},
+  {w:"rest",m:"休息、剩余的"},
+  {w:"silently",m:"寂静地、沉默地"},
+  {w:"stay",m:"保持、停留"},
+  {w:"sympathy",m:"同情"},
+  {w:"test",m:"测试"},
+  {w:"try",m:"尝试"},
+  {w:"visit",m:"拜访"},
+  {w:"wait",m:"等待"},
+  {w:"weak",m:"虚弱的、微弱的"},
+  {w:"affect",m:"影响"},
+  {w:"amused",m:"娱乐的、开心的"},
+  {w:"apply",m:"应用、申请"},
+  {w:"book",m:"预定、书籍"},
+  {w:"build",m:"建造、积累"},
+  {w:"clear",m:"清楚的、透明的、清除"},
+  {w:"cold",m:"冷的"},
+  {w:"complain",m:"抱怨"},
+  {w:"cry",m:"哭"},
+  {w:"determine",m:"决定"},
+  {w:"ever",m:"曾经、总是"},
+  {w:"examine",m:"检查"},
+  {w:"fight",m:"战斗、斗争、打斗"},
+  {w:"fortunately",m:"幸运地"},
+  {w:"frightened",m:"害怕的"},
+  {w:"guess",m:"猜测"},
+  {w:"hear",m:"听到"},
+  {w:"how",m:"如何"},
+  {w:"hurt",m:"伤害、疼痛"},
+  {w:"intention",m:"意图、打算"},
+  {w:"job",m:"工作"},
+  {w:"prove",m:"证明"},
+  {w:"reach",m:"到达、达到、触及"},
+  {w:"result",m:"结果"},
+  {w:"search",m:"搜索、搜寻、搜查"},
+  {w:"secret",m:"秘密"},
+  {w:"shock",m:"震惊、休克"},
+  {w:"slow",m:"慢的"},
+  {w:"step",m:"迈步、步骤、台阶"},
+  {w:"suffer",m:"遭受"},
+  {w:"tell",m:"告诉、讲述、识别"},
+  {w:"wisdom",m:"智慧"},
+  {w:"about",m:"关于"},
+  {w:"allow",m:"允许"},
+  {w:"also",m:"也、而且"},
+  {w:"buy",m:"购买"},
+  {w:"cheer",m:"欢呼"},
+  {w:"compare",m:"比较"},
+  {w:"depend",m:"依赖"},
+  {w:"guide",m:"指导、指南、导游"},
+  {w:"hide",m:"隐藏"},
+  {w:"instruction",m:"指令、教导"},
+  {w:"jump",m:"跳"},
+  {w:"late",m:"晚的"},
+  {w:"long",m:"长的、渴望"},
+  {w:"message",m:"消息"},
+  {w:"part",m:"部分"},
+  {w:"pick",m:"挑选"},
+  {w:"powerful",m:"强有力的"},
+  {w:"predict",m:"预测、预言"},
+  {w:"recover",m:"恢复"},
+  {w:"reward",m:"回报、报酬"},
+  {w:"set",m:"设置、设立、一套"},
+  {w:"shake",m:"摇动、抖动"},
+  {w:"sign",m:"签名、迹象、标志牌"},
+  {w:"spread",m:"传播"},
+  {w:"stick",m:"棍、粘住、坚持"},
+  {w:"touch",m:"触摸、感动"},
+  {w:"value",m:"价值、重视"},
+  {w:"why",m:"为什么"},
+  {w:"ability",m:"能力"},
+  {w:"along",m:"沿着"},
+  {w:"approach",m:"接近、方法"},
+  {w:"astonished",m:"惊讶的"},
+  {w:"behavior",m:"行为"},
+  {w:"cautious",m:"谨慎的"},
+  {w:"clean",m:"干净的、打扫"},
+  {w:"close",m:"关闭、接近的、密切的"},
+  {w:"count",m:"计数、重要"},
+  {w:"empty",m:"空的"},
+  {w:"every",m:"每个"},
+  {w:"explore",m:"探索"},
+  {w:"fair",m:"公平的"},
+  {w:"familiar",m:"熟悉的"},
+  {w:"finally",m:"最终"},
+  {w:"force",m:"强迫、迫使、力"},
+  {w:"grow",m:"成长、增长"},
+  {w:"happen",m:"发生"},
+  {w:"hit",m:"打击、撞击"},
+  {w:"kindness",m:"善良"},
+  {w:"lie",m:"位于、躺、说谎、放置"},
+  {w:"lift",m:"举起、电梯"},
+  {w:"method",m:"方法"},
+  {w:"observe",m:"观察"},
+  {w:"obvious",m:"明显的"},
+  {w:"of",m:"的"},
+  {w:"otherwise",m:"否则"},
+  {w:"popular",m:"受欢迎的"},
+  {w:"praise",m:"赞美、表扬"},
+  {w:"present",m:"呈现、提出、礼物、现在"},
+  {w:"purpose",m:"目的"},
+  {w:"quiet",m:"安静的"},
+  {w:"quit",m:"退出、辞职"},
+  {w:"remove",m:"移除"},
+  {w:"request",m:"请求"},
+  {w:"require",m:"需要、要求"},
+  {w:"scared",m:"害怕的"},
+  {w:"simple",m:"简单的"},
+  {w:"spirit",m:"精神"},
+  {w:"survive",m:"幸存"},
+  {w:"unwilling",m:"不情愿的"},
+  {w:"urge",m:"催促、敦促、冲动"},
+  {w:"yet",m:"然而"},
+  {w:"add",m:"增加、补充"},
+  {w:"amazing",m:"令人赞叹的、了不起的"},
+  {w:"announce",m:"宣布"},
+  {w:"appointment",m:"预约"},
+  {w:"attempt",m:"试图、企图"},
+  {w:"attract",m:"吸引"},
+  {w:"bad",m:"坏的"},
+  {w:"beside",m:"在……旁边"},
+  {w:"charge",m:"收费、掌管、充电"},
+  {w:"cover",m:"覆盖、足以支付、封面"},
+  {w:"disturb",m:"打扰"},
+  {w:"down",m:"在……下面、情绪低落"},
+  {w:"draw",m:"画画、拉动、抽出、平局"},
+  {w:"form",m:"形式、形成、表格"},
+  {w:"guilty",m:"内疚的"},
+  {w:"lonely",m:"孤独的"},
+  {w:"money",m:"钱"},
+  {w:"record",m:"记录、唱片"},
+  {w:"reply",m:"回复"},
+  {w:"response",m:"回应"},
+  {w:"stress",m:"压力、强调"},
+  {w:"sure",m:"当然的"},
+  {w:"usual",m:"通常的"},
+  {w:"view",m:"景观、观点"},
+  {w:"afraid",m:"害怕的"},
+  {w:"against",m:"相对、相反、反对"},
+  {w:"ambition",m:"雄心、志向"},
+  {w:"beat",m:"击败"},
+  {w:"benefit",m:"益处、好处、使受益"},
+  {w:"breath",m:"呼吸"},
+  {w:"class",m:"班级、级别"},
+  {w:"compete",m:"竞争"},
+  {w:"conclude",m:"得出结论、终止"},
+  {w:"connect",m:"连接"},
+  {w:"convince",m:"使信服、使确信"},
+  {w:"cross",m:"跨过、穿过"},
+  {w:"do",m:"做"},
+  {w:"during",m:"在……期间"},
+  {w:"duty",m:"责任"},
+  {w:"eager",m:"渴望的、急切的"},
+  {w:"example",m:"例子、榜样"},
+  {w:"exchange",m:"交换"},
+  {w:"expose",m:"暴露、使接触到"},
+  {w:"eye",m:"眼睛"},
+  {w:"forgive",m:"原谅"},
+  {w:"fun",m:"快乐"},
+  {w:"generous",m:"慷慨的"},
+  {w:"goal",m:"目标"},
+  {w:"introduce",m:"介绍、引入"},
+  {w:"nearly",m:"几乎"},
+  {w:"no",m:"否定"},
+  {w:"note",m:"笔记、便条、纸币、注意"},
+  {w:"opinion",m:"意见"},
+  {w:"permit",m:"允许"},
+  {w:"raise",m:"增加、抚养、筹款、提及"},
+  {w:"rush",m:"冲"},
+  {w:"safe",m:"安全的"},
+  {w:"seek",m:"寻求"},
+  {w:"select",m:"选择"},
+  {w:"settle",m:"解决、定居、安排好"},
+  {w:"sleep",m:"睡觉、睡眠"},
+  {w:"smart",m:"聪明的"},
+  {w:"smile",m:"笑"},
+  {w:"task",m:"任务"},
+  {w:"upset",m:"不高兴的、使困扰"},
+  {w:"waste",m:"浪费"},
+  {w:"what",m:"什么事物"},
+  {w:"where",m:"哪里"},
+  {w:"again",m:"再次"},
+  {w:"approve",m:"赞同"},
+  {w:"attitude",m:"态度"},
+  {w:"body",m:"身体"},
+  {w:"condition",m:"条件、情况、健康状况"},
+  {w:"dangerous",m:"危险的"},
+  {w:"declare",m:"宣布"},
+  {w:"deliver",m:"传递、传输"},
+  {w:"design",m:"设计"},
+  {w:"devotion",m:"投入、奉献"},
+  {w:"discuss",m:"讨论"},
+  {w:"face",m:"脸、面对"},
+  {w:"finish",m:"完成"},
+  {w:"head",m:"头、前往"},
+  {w:"identify",m:"识别、鉴定"},
+  {w:"important",m:"重要的"},
+  {w:"just",m:"只、仅仅"},
+  {w:"laugh",m:"笑"},
+  {w:"light",m:"点亮、轻的"},
+  {w:"motivation",m:"动机、动力"},
+  {w:"new",m:"新的"},
+  {w:"polite",m:"礼貌的"},
+  {w:"poor",m:"贫穷的、劣质的、差的"},
+  {w:"position",m:"位置、职位"},
+  {w:"post",m:"发布、张贴、邮寄"},
+  {w:"prefer",m:"更喜欢、更倾向于"},
+  {w:"pretend",m:"假装"},
+  {w:"problem",m:"问题"},
+  {w:"related",m:"有关联的"},
+  {w:"school",m:"学校"},
+  {w:"travel",m:"旅行、出行"},
+  {w:"wake",m:"醒来、唤醒"},
+  {w:"whether",m:"是否"},
+  {w:"win",m:"赢"},
+  {w:"witness",m:"目击、见证"},
+  {w:"across",m:"穿过"},
+  {w:"actually",m:"实际上"},
+  {w:"aim",m:"目的、旨在、瞄准"},
+  {w:"annoy",m:"使生气、惹恼"},
+  {w:"answer",m:"答案、回答"},
+  {w:"apologize",m:"道歉"},
+  {w:"busy",m:"忙碌的"},
+  {w:"case",m:"情况、案例"},
+  {w:"common",m:"普通的、共同的"},
+  {w:"companion",m:"同伴"},
+  {w:"copy",m:"复制"},
+  {w:"delay",m:"延迟、延误"},
+  {w:"desperate",m:"孤注一掷的、拼命的"},
+  {w:"distance",m:"距离"},
+  {w:"far",m:"远的"},
+  {w:"fix",m:"修理、固定"},
+  {w:"flexible",m:"灵活的"},
+  {w:"focus",m:"集中注意力、聚焦、焦点"},
+  {w:"great",m:"伟大的、巨大的、重要的"},
+  {w:"greet",m:"打招呼"},
+  {w:"harmful",m:"有害的"},
+  {w:"immediate",m:"立即的"},
+  {w:"instead",m:"相反的是、代替、反而"},
+  {w:"invite",m:"邀请、招致"},
+  {w:"lend",m:"借出"},
+  {w:"measure",m:"衡量、测量、措施"},
+  {w:"nod",m:"点头"},
+  {w:"office",m:"办公室"},
+  {w:"old",m:"老的、旧的"},
+  {w:"ordinary",m:"普通的、平凡的"},
+  {w:"pack",m:"打包、小包装"},
+  {w:"perfect",m:"完美的"},
+  {w:"produce",m:"生产"},
+  {w:"pull",m:"拉"},
+  {w:"punish",m:"惩罚"},
+  {w:"remain",m:"保持、保留、剩余"},
+  {w:"risk",m:"风险"},
+  {w:"sharp",m:"尖的、清晰的"},
+  {w:"should",m:"应该"},
+  {w:"sight",m:"视野、景象"},
+  {w:"sorrow",m:"悲伤"},
+  {w:"sound",m:"声音"},
+  {w:"store",m:"存储、商店"},
+  {w:"suddenly",m:"突然地"},
+  {w:"tear",m:"眼泪、撕碎"},
+  {w:"thus",m:"因此"},
+  {w:"warm",m:"温暖"},
+  {w:"abandon",m:"抛弃、放弃"},
+  {w:"above",m:"在……上面"},
+  {w:"advantage",m:"优势"},
+  {w:"award",m:"颁奖、奖励"},
+  {w:"basically",m:"基本地"},
+  {w:"borrow",m:"借入"},
+  {w:"bright",m:"明亮的"},
+  {w:"cause",m:"造成、原因"},
+  {w:"certain",m:"确定的"},
+  {w:"child",m:"孩子"},
+  {w:"commitment",m:"承诺、投入"},
+  {w:"complete",m:"完全的、完成"},
+  {w:"convenient",m:"方便的"},
+  {w:"correct",m:"纠正、正确的"},
+  {w:"cure",m:"治愈"},
+  {w:"decorate",m:"装饰"},
+  {w:"donation",m:"捐赠"},
+  {w:"earn",m:"挣得"},
+  {w:"evaluate",m:"评估"},
+  {w:"extra",m:"额外的"},
+  {w:"fade",m:"褪色、逐渐消失"},
+  {w:"figure",m:"认为、人物、数字、身形"},
+  {w:"firm",m:"公司、牢固的"},
+  {w:"fit",m:"健康的、适合"},
+  {w:"gather",m:"聚集、收集、集合"},
+  {w:"grade",m:"级别、年级、成绩、评分"},
+  {w:"gradually",m:"逐渐地"},
+  {w:"habit",m:"习惯"},
+  {w:"heavy",m:"沉重的"},
+  {w:"home",m:"家"},
+  {w:"mark",m:"标记、分数、做标记、打分"},
+  {w:"match",m:"比赛、匹配、火柴"},
+  {w:"mention",m:"提及"},
+  {w:"might",m:"可能"},
+  {w:"name",m:"名字、命名"},
+  {w:"occupy",m:"占据、占用"},
+  {w:"operation",m:"运营、操作、手术"},
+  {w:"optimistic",m:"乐观的"},
+  {w:"paper",m:"纸、试卷、论文、报纸"},
+  {w:"pause",m:"暂停"},
+  {w:"phone",m:"电话"},
+  {w:"picture",m:"照片、设想"},
+  {w:"positive",m:"积极的"},
+  {w:"program",m:"项目、课程"},
+  {w:"progress",m:"进步"},
+  {w:"recommend",m:"推荐"},
+  {w:"reflect",m:"反射、反映、思考"},
+  {w:"reliable",m:"可靠的"},
+  {w:"replace",m:"替代"},
+  {w:"rich",m:"丰富的、富有的"},
+  {w:"sell",m:"卖"},
+  {w:"shape",m:"形状、塑造"},
+  {w:"situation",m:"情况、局势"},
+  {w:"spare",m:"匀给、空闲的"},
+  {w:"spend",m:"花费"},
+  {w:"story",m:"故事"},
+  {w:"talent",m:"才华、天赋、人才"},
+  {w:"thank",m:"感谢"},
+  {w:"then",m:"然后"},
+  {w:"throw",m:"扔"},
+  {w:"trip",m:"旅行"},
+  {w:"truth",m:"真相"},
+  {w:"voice",m:"人声"},
+  {w:"wave",m:"波、波浪、挥手、挥动"},
+  {w:"well",m:"好、井、涌出"},
+  {w:"who",m:"谁"},
+  {w:"adjust",m:"调整、适应"},
+  {w:"adopt",m:"采用、收养"},
+  {w:"afford",m:"承担得起"},
+  {w:"assume",m:"假设、揣测"},
+  {w:"attack",m:"攻击"},
+  {w:"begin",m:"开始"},
+  {w:"can",m:"能、可以、金属罐"},
+  {w:"career",m:"职业"},
+  {w:"casual",m:"随意的"},
+  {w:"climb",m:"攀爬"},
+  {w:"colleague",m:"同事"},
+  {w:"contribution",m:"贡献"},
+  {w:"conversation",m:"对话"},
+  {w:"deep",m:"深的"},
+  {w:"dirty",m:"脏的"},
+  {w:"eventually",m:"最终"},
+  {w:"favor",m:"喜欢、赞同"},
+  {w:"flower",m:"花朵"},
+  {w:"fly",m:"飞"},
+  {w:"game",m:"游戏、比赛"},
+  {w:"generally",m:"普遍、一般、总的来说"},
+  {w:"handle",m:"处理"},
+  {w:"have",m:"有"},
+  {w:"health",m:"健康"},
+  {w:"hospital",m:"医院"},
+  {w:"hurry",m:"匆忙、赶快"},
+  {w:"influence",m:"影响"},
+  {w:"insist",m:"坚持"},
+  {w:"joy",m:"快乐"},
+  {w:"last",m:"最后、持续"},
+  {w:"manner",m:"礼貌、礼仪、方式"},
+  {w:"march",m:"行进"},
+  {w:"I",m:"我"},
+  {w:"messy",m:"乱的"},
+  {w:"nervous",m:"紧张的"},
+  {w:"owe",m:"欠、归因于"},
+  {w:"peace",m:"和平"},
+  {w:"pity",m:"同情"},
+  {w:"prevent",m:"阻止、预防"},
+  {w:"print",m:"打印"},
+  {w:"proper",m:"恰当的、合适的"},
+  {w:"provide",m:"提供"},
+  {w:"quickly",m:"快速地"},
+  {w:"reaction",m:"反应"},
+  {w:"regular",m:"定期的、常规的"},
+  {w:"remark",m:"评价、评论"},
+  {w:"repairing",m:"修复、修理"},
+  {w:"repeat",m:"重复"},
+  {w:"schedule",m:"日程"},
+  {w:"seat",m:"座位"},
+  {w:"seldom",m:"不常、很少"},
+  {w:"self",m:"自我、自己"},
+  {w:"separate",m:"分开"},
+  {w:"shine",m:"闪耀、照耀"},
+  {w:"sink",m:"下沉"},
+  {w:"size",m:"大小"},
+  {w:"standard",m:"标准、水平"},
+  {w:"student",m:"学生"},
+  {w:"terror",m:"恐惧"},
+  {w:"wander",m:"闲逛"},
+  {w:"want",m:"想要"},
+  {w:"wear",m:"穿着"},
+  {w:"weight",m:"重量"},
+  {w:"wish",m:"希望"},
+  {w:"wrong",m:"错误的"},
+  {w:"accident",m:"事故"},
+  {w:"adventure",m:"冒险"},
+  {w:"already",m:"已经"},
+  {w:"assess",m:"评估"},
+  {w:"assist",m:"援助"},
+  {w:"attach",m:"附上、附加"},
+  {w:"bag",m:"手提包"},
+  {w:"beg",m:"乞求"},
+  {w:"behind",m:"在……后面"},
+  {w:"big",m:"大的"},
+  {w:"block",m:"阻挡、街区"},
+  {w:"box",m:"盒子"},
+  {w:"car",m:"车"},
+  {w:"classmate",m:"同学"},
+  {w:"communication",m:"沟通"},
+  {w:"course",m:"课程"},
+  {w:"education",m:"教育"},
+  {w:"effect",m:"效果"},
+  {w:"enter",m:"进入"},
+  {w:"event",m:"事件"},
+  {w:"exactly",m:"确切地、正是"},
+  {w:"exercise",m:"锻炼"},
+  {w:"expand",m:"扩大"},
+  {w:"expensive",m:"贵的"},
+  {w:"experiment",m:"实验"},
+  {w:"family",m:"家庭"},
+  {w:"fast",m:"快速的"},
+  {w:"field",m:"田地、场地、领域"},
+  {w:"graduation",m:"毕业"},
+  {w:"hate",m:"讨厌"},
+  {w:"heart",m:"心"},
+  {w:"house",m:"房子"},
+  {w:"interview",m:"采访、面试"},
+  {w:"into",m:"进入内部"},
+  {w:"less",m:"更少"},
+  {w:"letter",m:"信件、字母"},
+  {w:"list",m:"清单、列表"},
+  {w:"listen",m:"听"},
+  {w:"matter",m:"事情、问题、重要"},
+  {w:"neighborhood",m:"小区、社区"},
+  {w:"never",m:"从不"},
+  {w:"object",m:"目标、物体、反对"},
+  {w:"one",m:"一个"},
+  {w:"organize",m:"组织"},
+  {w:"overcome",m:"克服"},
+  {w:"paint",m:"绘画"},
+  {w:"passenger",m:"乘客"},
+  {w:"personal",m:"个人的"},
+  {w:"potential",m:"潜在的、潜力"},
+  {w:"private",m:"私人的"},
+  {w:"probably",m:"可能地"},
+  {w:"project",m:"项目、计划"},
+  {w:"promote",m:"促进"},
+  {w:"public",m:"公众的"},
+  {w:"ready",m:"准备好的"},
+  {w:"reject",m:"拒绝"},
+  {w:"road",m:"路"},
+  {w:"ruin",m:"毁灭"},
+  {w:"rule",m:"规则"},
+  {w:"science",m:"科学"},
+  {w:"shy",m:"害羞的"},
+  {w:"side",m:"一边"},
+  {w:"similar",m:"相似的"},
+  {w:"sit",m:"坐在"},
+  {w:"sorry",m:"抱歉、难过的、歉疚"},
+  {w:"stare",m:"盯着"},
+  {w:"state",m:"陈述、状态"},
+  {w:"street",m:"街道"},
+  {w:"strict",m:"严格的"},
+  {w:"strike",m:"击打、罢工"},
+  {w:"style",m:"风格"},
+  {w:"suspect",m:"怀疑"},
+  {w:"sweet",m:"甜的"},
+  {w:"team",m:"团队"},
+  {w:"tough",m:"艰难的"},
+  {w:"toward",m:"向、朝向"},
+  {w:"tradition",m:"传统"},
+  {w:"welcome",m:"欢迎"},
+  {w:"website",m:"网站"},
+  {w:"adapt",m:"改编、适应"},
+  {w:"arrival",m:"到达"},
+  {w:"aware",m:"意识到的"},
+  {w:"awkward",m:"笨拙的、令人尴尬的"},
+  {w:"balance",m:"平衡"},
+  {w:"blood",m:"血"},
+  {w:"bother",m:"打扰"},
+  {w:"burn",m:"燃烧"},
+  {w:"business",m:"商业"},
+  {w:"character",m:"性格、角色、字符"},
+  {w:"chat",m:"聊天"},
+  {w:"clothes",m:"衣服"},
+  {w:"color",m:"颜色"},
+  {w:"concentrate",m:"集中注意力"},
+  {w:"conflict",m:"冲突"},
+  {w:"constantly",m:"持续地"},
+  {w:"cook",m:"烹饪、厨师"},
+  {w:"cool",m:"凉爽的、冷却"},
+  {w:"crazy",m:"疯狂的"},
+  {w:"cut",m:"切、砍"},
+  {w:"dance",m:"跳舞"},
+  {w:"darkness",m:"黑暗"},
+  {w:"day",m:"日子"},
+  {w:"defend",m:"保卫、防守"},
+  {w:"depress",m:"使抑郁、使沮丧"},
+  {w:"deserve",m:"值得、应得"},
+  {w:"die",m:"死"},
+  {w:"doctor",m:"医生、博士"},
+  {w:"door",m:"门"},
+  {w:"eat",m:"吃"},
+  {w:"employ",m:"雇用、采用"},
+  {w:"faith",m:"信心、信仰"},
+  {w:"first",m:"第一"},
+  {w:"fold",m:"折叠"},
+  {w:"food",m:"食物"},
+  {w:"foolish",m:"愚蠢的"},
+  {w:"forward",m:"前进的、向前、转发"},
+  {w:"frequently",m:"频繁地"},
+  {w:"frozen",m:"冻结的、冻住的"},
+  {w:"gaining",m:"获得"},
+  {w:"hang",m:"悬挂"},
+  {w:"holiday",m:"假日"},
+  {w:"homework",m:"作业"},
+  {w:"increase",m:"增加"},
+  {w:"injured",m:"受伤的"},
+  {w:"interpret",m:"解释、说明"},
+  {w:"invent",m:"发明"},
+  {w:"join",m:"参加"},
+  {w:"lack",m:"缺乏"},
+  {w:"lazy",m:"懒惰的"},
+  {w:"line",m:"排队、线"},
+  {w:"loud",m:"大声的"},
+  {w:"modest",m:"谦虚的"},
+  {w:"narrow",m:"狭窄的"},
+  {w:"noise",m:"噪音"},
+  {w:"now",m:"现在"},
+  {w:"number",m:"数字"},
+  {w:"other",m:"其他"},
+  {w:"pace",m:"速度、行进"},
+  {w:"partner",m:"伙伴"},
+  {w:"passion",m:"热情"},
+  {w:"pour",m:"倾倒、倾泻"},
+  {w:"prize",m:"奖"},
+  {w:"professor",m:"教授"},
+  {w:"quality",m:"质量、品质"},
+  {w:"race",m:"比赛、竞速"},
+  {w:"recall",m:"回忆"},
+  {w:"reduce",m:"减少"},
+  {w:"review",m:"复习、回顾"},
+  {w:"room",m:"房间、空间"},
+  {w:"rough",m:"粗糙的、艰难的"},
+  {w:"same",m:"同样的"},
+  {w:"saying",m:"谚语"},
+  {w:"seem",m:"似乎"},
+  {w:"seize",m:"抓住"},
+  {w:"sick",m:"生病的"},
+  {w:"skip",m:"跳过"},
+  {w:"slight",m:"轻微的"},
+  {w:"slip",m:"滑倒、下滑"},
+  {w:"soft",m:"软的"},
+  {w:"spot",m:"注意到、地点、斑点"},
+  {w:"station",m:"车站"},
+  {w:"suppose",m:"假设、认为"},
+  {w:"surround",m:"包围、围绕"},
+  {w:"system",m:"系统"},
+  {w:"tight",m:"紧的"},
+  {w:"track",m:"追踪、足迹、痕迹"},
+  {w:"trend",m:"趋势"},
+  {w:"typical",m:"典型的"},
+  {w:"volunteer",m:"志愿者"},
+  {w:"water",m:"水"},
+  {w:"absence",m:"缺席"},
+  {w:"absorb",m:"吸收、理解"},
+  {w:"accurate",m:"精确的"},
+  {w:"acquire",m:"获得"},
+  {w:"address",m:"地址、解决问题"},
+  {w:"age",m:"年龄、时代"},
+  {w:"aggressive",m:"好斗的、有侵略性的"},
+  {w:"air",m:"空气"},
+  {w:"all",m:"一切"},
+  {w:"analyze",m:"分析"},
+  {w:"art",m:"艺术"},
+  {w:"between",m:"在……之间"},
+  {w:"bill",m:"账单"},
+  {w:"broad",m:"宽阔的"},
+  {w:"burden",m:"负担"},
+  {w:"calculate",m:"计算"},
+  {w:"cancel",m:"取消"},
+  {w:"center",m:"中心"},
+  {w:"cheat",m:"作弊、欺骗"},
+  {w:"church",m:"教堂"},
+  {w:"clever",m:"聪明的"},
+  {w:"complex",m:"复杂的"},
+  {w:"conduct",m:"实施、开展、组织"},
+  {w:"content",m:"满足的、内容、目录"},
+  {w:"corner",m:"角落"},
+  {w:"cost",m:"花费、成本"},
+  {w:"crowded",m:"拥堵的"},
+  {w:"customer",m:"顾客"},
+  {w:"date",m:"日期、约会"},
+  {w:"deed",m:"行为、事迹"},
+  {w:"delicate",m:"精美的、微妙的"},
+  {w:"desk",m:"桌子"},
+  {w:"destroy",m:"摧毁"},
+  {w:"dress",m:"穿"},
+  {w:"enough",m:"足够"},
+  {w:"equal",m:"平等的"},
+  {w:"fill",m:"填满、充满"},
+  {w:"fine",m:"很好的、罚款"},
+  {w:"flight",m:"航班"},
+  {w:"flow",m:"流动"},
+  {w:"fond",m:"喜欢的"},
+  {w:"function",m:"功能、起作用"},
+  {w:"gently",m:"温柔地"},
+  {w:"glad",m:"高兴的"},
+  {w:"grasp",m:"抓住、理解"},
+  {w:"height",m:"高度"},
+  {w:"horrified",m:"受到惊吓的"},
+  {w:"hug",m:"拥抱"},
+  {w:"journey",m:"旅行"},
+  {w:"lecture",m:"讲座"},
+  {w:"let",m:"让"},
+  {w:"limit",m:"限制"},
+  {w:"medicine",m:"医药"},
+  {w:"mistake",m:"错误"},
+  {w:"mix",m:"混合"},
+  {w:"must",m:"必须"},
+  {w:"next",m:"下一个"},
+  {w:"outside",m:"外面的"},
+  {w:"parents",m:"家长"},
+  {w:"party",m:"派对"},
+  {w:"possession",m:"所有物、财产"},
+  {w:"pretty",m:"漂亮的"},
+  {w:"process",m:"过程、进程、处理"},
+  {w:"profit",m:"利润"},
+  {w:"refer",m:"参考、指的是、提及"},
+  {w:"relevant",m:"相关的"},
+  {w:"represent",m:"代表"},
+  {w:"ring",m:"戒指、响起"},
+  {w:"roll",m:"滚动、卷"},
+  {w:"scream",m:"尖叫"},
+  {w:"shop",m:"购物"},
+  {w:"short",m:"短的"},
+  {w:"shout",m:"喊叫"},
+  {w:"sigh",m:"叹息、叹气"},
+  {w:"signal",m:"信号"},
+  {w:"silly",m:"愚蠢的"},
+  {w:"small",m:"小的"},
+  {w:"stupid",m:"愚蠢的"},
+  {w:"suit",m:"适合、西装"},
+  {w:"sun",m:"太阳"},
+  {w:"supply",m:"供应"},
+  {w:"taste",m:"口味、品尝"},
+  {w:"tolerate",m:"容忍"},
+  {w:"tour",m:"旅行"},
+  {w:"trick",m:"诡计、花招、欺骗"},
+  {w:"under",m:"在……之下"},
+  {w:"victory",m:"胜利"},
+  {w:"wash",m:"洗"},
+  {w:"weather",m:"天气"},
+  {w:"whisper",m:"低声说、窃窃私语"},
+  {w:"wild",m:"野生的"},
+  {w:"wind",m:"风、缠绕、蜿蜒"},
+  {w:"world",m:"世界"},
+  {w:"worth",m:"值得"},
+  {w:"young",m:"年轻的"},
+  {w:"accessible",m:"可进入的、可使用的"},
+  {w:"ache",m:"疼"},
+  {w:"advance",m:"前进"},
+  {w:"advertise",m:"打广告"},
+  {w:"always",m:"总是"},
+  {w:"another",m:"另一个"},
+  {w:"assignment",m:"任务"},
+  {w:"association",m:"关联、协会"},
+  {w:"available",m:"可获得的、有空的"},
+  {w:"average",m:"平均的"},
+  {w:"belong",m:"属于"},
+  {w:"below",m:"在……下面"},
+  {w:"bite",m:"咬"},
+  {w:"bitter",m:"苦的"},
+  {w:"blow",m:"吹"},
+  {w:"board",m:"板、乘坐交通工具"},
+  {w:"bottle",m:"瓶子"},
+  {w:"brand",m:"品牌"},
+  {w:"brief",m:"简短的"},
+  {w:"brother",m:"兄弟"},
+  {w:"bury",m:"埋"},
+  {w:"camp",m:"营地"},
+  {w:"cash",m:"现金"},
+  {w:"ceremony",m:"仪式"},
+  {w:"chair",m:"椅子"},
+  {w:"city",m:"城市"},
+  {w:"clap",m:"鼓掌、拍手"},
+  {w:"classroom",m:"教室"},
+  {w:"club",m:"俱乐部"},
+  {w:"command",m:"命令"},
+  {w:"congratulate",m:"庆祝、祝贺"},
+  {w:"court",m:"法庭、球场"},
+  {w:"crash",m:"碰撞"},
+  {w:"cruel",m:"残忍的"},
+  {w:"damage",m:"损害"},
+  {w:"deal",m:"处理、大量、交易"},
+  {w:"defeat",m:"击败"},
+  {w:"dollar",m:"美元"},
+  {w:"drag",m:"拉、拽"},
+  {w:"dry",m:"干燥的"},
+  {w:"early",m:"早的、早期的"},
+  {w:"ease",m:"减轻、缓和、容易、自在"},
+  {w:"elevator",m:"电梯"},
+  {w:"enthusiastic",m:"热情的"},
+  {w:"envy",m:"嫉妒、羡慕"},
+  {w:"equipment",m:"设备、装备"},
+  {w:"exist",m:"存在"},
+  {w:"exit",m:"出口、退出"},
+  {w:"extend",m:"延伸、延展"},
+  {w:"famous",m:"有名的"},
+  {w:"fan",m:"粉丝"},
+  {w:"farm",m:"农场"},
+  {w:"fault",m:"错误、缺点"},
+  {w:"foot",m:"脚、英尺"},
+  {w:"foreign",m:"国外的"},
+  {w:"fresh",m:"新鲜的"},
+  {w:"front",m:"前面的"},
+  {w:"fruit",m:"水果、成果"},
+  {w:"full",m:"满的"},
+  {w:"future",m:"未来"},
+  {w:"gesture",m:"手势、姿态"},
+  {w:"glare",m:"瞪着、怒视"},
+  {w:"grocery",m:"杂货店"},
+  {w:"half",m:"一半"},
+  {w:"he",m:"他"},
+  {w:"she",m:"她"},
+  {w:"host",m:"主办、主持人、主人"},
+  {w:"hot",m:"热的"},
+  {w:"hungry",m:"饥饿的"},
+  {w:"illness",m:"疾病"},
+  {w:"incident",m:"事件"},
+  {w:"indicate",m:"表明"},
+  {w:"innocent",m:"无辜的、天真的"},
+  {w:"instrument",m:"乐器、仪器"},
+  {w:"involve",m:"涉及"},
+  {w:"kick",m:"踢"},
+  {w:"knock",m:"敲"},
+  {w:"lawyer",m:"律师"},
+  {w:"level",m:"水平、等级"},
+  {w:"link",m:"连接、联系"},
+  {w:"lock",m:"锁"},
+  {w:"machine",m:"机器"},
+  {w:"major",m:"主要的、专业"},
+  {w:"material",m:"材料"},
+  {w:"member",m:"成员"},
+  {w:"negotiate",m:"谈判、协商"},
+  {w:"nice",m:"很好的"},
+  {w:"obey",m:"遵守、服从"},
+  {w:"official",m:"官方的"},
+  {w:"often",m:"经常"},
+  {w:"opportunity",m:"机会"},
+  {w:"outgoing",m:"外向的"},
+  {w:"outstanding",m:"杰出的"},
+  {w:"own",m:"拥有、自己的"},
+  {w:"panic",m:"恐慌、惊恐"},
+  {w:"path",m:"小道"},
+  {w:"photo",m:"照片"},
+  {w:"police",m:"警察"},
+  {w:"preserve",m:"保护、保存"},
+  {w:"procedure",m:"步骤"},
+  {w:"rank",m:"排名、等级"},
+  {w:"rarely",m:"罕见地、几乎不"},
+  {w:"rather",m:"相当地"},
+  {w:"reform",m:"改革"},
+  {w:"rescue",m:"拯救"},
+  {w:"research",m:"研究"},
+  {w:"retire",m:"退休"},
+  {w:"ride",m:"骑"},
+  {w:"ridiculous",m:"荒谬的"},
+  {w:"rise",m:"上升"},
+  {w:"round",m:"圆形的、周围、回合"},
+  {w:"routine",m:"常规、惯例"},
+  {w:"sacrifice",m:"牺牲"},
+  {w:"scene",m:"场景"},
+  {w:"scholar",m:"学者"},
+  {w:"shoulder",m:"肩膀"},
+  {w:"sincerely",m:"真心地"},
+  {w:"smell",m:"闻"},
+  {w:"solution",m:"解决方案"},
+  {w:"soon",m:"很快、不久"},
+  {w:"space",m:"空间、太空"},
+  {w:"sport",m:"体育运动"},
+  {w:"steal",m:"偷"},
+  {w:"straight",m:"直接的"},
+  {w:"target",m:"目标"},
+  {w:"temporary",m:"临时的"},
+  {w:"tense",m:"紧张的"},
+  {w:"theory",m:"理论"},
+  {w:"thrilled",m:"兴奋的"},
+  {w:"title",m:"标题"},
+  {w:"too",m:"过于……、也"},
+  {w:"tool",m:"工具"},
+  {w:"top",m:"顶端"},
+  {w:"topic",m:"话题"},
+  {w:"toy",m:"玩具"},
+  {w:"transform",m:"改变"},
+  {w:"transport",m:"运输"},
+  {w:"trap",m:"陷阱、困住"},
+  {w:"tremble",m:"颤抖"},
+  {w:"upon",m:"在……上面"},
+  {w:"vague",m:"模糊的"},
+  {w:"village",m:"村庄"},
+  {w:"week",m:"周"},
+  {w:"wide",m:"广泛的、宽的"},
+  {w:"withdraw",m:"退出、撤退"},
+  {w:"woman",m:"女人"},
+  {w:"wrap",m:"包住、裹住"},
+  {w:"account",m:"账户、解释说明"},
+  {w:"accuse",m:"控告"},
+  {w:"acknowledge",m:"承认、感谢"},
+  {w:"adequate",m:"充足的"},
+  {w:"adult",m:"大人、成人"},
+  {w:"ahead",m:"在……前面"},
+  {w:"airport",m:"机场"},
+  {w:"alive",m:"活着的"},
+  {w:"amount",m:"数量"},
+  {w:"appeal",m:"呼吁、吸引"},
+  {w:"appropriate",m:"合适的"},
+  {w:"arm",m:"手臂、武器"},
+  {w:"athlete",m:"运动员"},
+  {w:"audience",m:"观众"},
+  {w:"automatic",m:"自动的"},
+  {w:"background",m:"背景"},
+  {w:"bakery",m:"面包房"},
+  {w:"bank",m:"银行、河岸"},
+  {w:"bargain",m:"讨价还价、便宜货"},
+  {w:"barrier",m:"障碍"},
+  {w:"bathe",m:"洗澡、沐浴"},
+  {w:"battle",m:"战斗"},
+  {w:"beautifully",m:"美丽地"},
+  {w:"bed",m:"床"},
+  {w:"bedroom",m:"卧室"},
+  {w:"bend",m:"弯曲"},
+  {w:"birth",m:"出生"},
+  {w:"border",m:"边界"},
+  {w:"burst",m:"迸发、爆发"},
+  {w:"cake",m:"蛋糕"},
+  {w:"campaign",m:"运动、活动、战役"},
+  {w:"cast",m:"扔、投射"},
+  {w:"celebrate",m:"庆祝"},
+  {w:"chaos",m:"混乱"},
+  {w:"circle",m:"圆圈、转圈"},
+  {w:"cloud",m:"云朵"},
+  {w:"clumsily",m:"笨拙地"},
+  {w:"coat",m:"外套"},
+  {w:"coincidence",m:"巧合"},
+  {w:"concept",m:"概念"},
+  {w:"consequence",m:"后果、结果"},
+  {w:"consistently",m:"一贯地、始终如一地"},
+  {w:"country",m:"国家"},
+  {w:"credit",m:"信用、学分、归功于、赞扬"},
+  {w:"cup",m:"杯子"},
+  {w:"cushion",m:"垫子"},
+  {w:"cycling",m:"骑自行车"},
+  {w:"debate",m:"讨论"},
+  {w:"decline",m:"减少、下降、拒绝"},
+  {w:"decrease",m:"减少"},
+  {w:"degree",m:"温度、程度、学位"},
+  {w:"delicious",m:"美味的"},
+  {w:"department",m:"部门"},
+  {w:"desert",m:"遗弃、沙漠"},
+  {w:"destination",m:"目的地"},
+  {w:"detail",m:"细节"},
+  {w:"dialogue",m:"对话"},
+  {w:"dignity",m:"尊严"},
+  {w:"distribute",m:"分发、分配"},
+  {w:"dive",m:"潜水、跳水"},
+  {w:"drink",m:"喝"},
+  {w:"dull",m:"乏味的"},
+  {w:"ear",m:"耳朵"},
+  {w:"enemy",m:"敌人"},
+  {w:"engineer",m:"工程师"},
+  {w:"entertain",m:"娱乐"},
+  {w:"entire",m:"完全的"},
+  {w:"entrance",m:"入口"},
+  {w:"especially",m:"尤其"},
+  {w:"essay",m:"论文、作文"},
+  {w:"evidence",m:"证据"},
+  {w:"exhibit",m:"展示"},
+  {w:"explode",m:"爆炸"},
+  {w:"fact",m:"事实"},
+  {w:"factory",m:"工厂"},
+  {w:"feed",m:"喂食"},
+  {w:"few",m:"很少"},
+  {w:"fire",m:"火、开除、开火"},
+  {w:"flash",m:"闪光、闪现"},
+  {w:"flee",m:"逃跑"},
+  {w:"footprint",m:"脚印、足迹"},
+  {w:"forbid",m:"禁止"},
+  {w:"frankly",m:"坦白地"},
+  {w:"fuel",m:"燃料、加强"},
+  {w:"glance",m:"一瞥"},
+  {w:"glory",m:"荣耀"},
+  {w:"grass",m:"草"},
+  {w:"group",m:"小组"},
+  {w:"guard",m:"保护、警卫"},
+  {w:"hair",m:"头发"},
+  {w:"heat",m:"热"},
+  {w:"hero",m:"英雄"},
+  {w:"hobby",m:"兴趣"},
+  {w:"huge",m:"大的"},
+  {w:"husband",m:"丈夫"},
+  {w:"intelligent",m:"聪明的"},
+  {w:"item",m:"物品"},
+  {w:"jog",m:"慢跑"},
+  {w:"key",m:"钥匙、关键的"},
+  {w:"kill",m:"杀"},
+  {w:"kiss",m:"亲吻"},
+  {w:"lab",m:"实验室"},
+  {w:"little",m:"少、小"},
+  {w:"low",m:"低的"},
+  {w:"luggage",m:"行李"},
+  {w:"magic",m:"魔法"},
+  {w:"mail",m:"邮件"},
+  {w:"main",m:"主要的"},
+  {w:"man",m:"男人"},
+  {w:"master",m:"精通、掌握、大师"},
+  {w:"math",m:"数学"},
+  {w:"mercy",m:"仁慈"},
+  {w:"merely",m:"仅仅"},
+  {w:"mirror",m:"镜子、反射、反映"},
+  {w:"model",m:"模型"},
+  {w:"modern",m:"现代的"},
+  {w:"moment",m:"时刻"},
+  {w:"mother",m:"妈妈"},
+  {w:"music",m:"音乐"},
+  {w:"none",m:"没有"},
+  {w:"nutrition",m:"营养"},
+  {w:"obtain",m:"获得"},
+  {w:"occasion",m:"场合"},
+  {w:"occur",m:"发生"},
+  {w:"oppose",m:"反对"},
+  {w:"participate",m:"参与"},
+  {w:"past",m:"过去的、过往、经过"},
+  {w:"pattern",m:"模式、图案"},
+  {w:"pile",m:"堆"},
+  {w:"pray",m:"祈祷"},
+  {w:"privilege",m:"特权、优先权"},
+  {w:"purchase",m:"购买"},
+  {w:"qualification",m:"资格"},
+  {w:"quarrel",m:"争吵"},
+  {w:"quite",m:"相当、非常"},
+  {w:"rail",m:"栏杆、铁轨"},
+  {w:"range",m:"范围"},
+  {w:"recently",m:"最近"},
+  {w:"recite",m:"背诵"},
+  {w:"regulation",m:"规定"},
+  {w:"remote",m:"遥远的"},
+  {w:"resist",m:"抵挡、抵抗"},
+  {w:"restaurant",m:"饭馆"},
+  {w:"role",m:"角色"},
+  {w:"rude",m:"粗鲁的"},
+  {w:"scold",m:"斥责"},
+  {w:"significance",m:"重要性"},
+  {w:"sing",m:"唱歌"},
+  {w:"sister",m:"姐妹"},
+  {w:"ski",m:"滑雪"},
+  {w:"smoke",m:"烟"},
+  {w:"smooth",m:"光滑的、顺利的"},
+  {w:"snow",m:"雪"},
+  {w:"sock",m:"袜子"},
+  {w:"specific",m:"具体的、详细的"},
+  {w:"speed",m:"速度、加速"},
+  {w:"split",m:"分割、分开"},
+  {w:"spoon",m:"勺子"},
+  {w:"square",m:"正方形"},
+  {w:"stable",m:"稳定的"},
+  {w:"stadium",m:"体育场"},
+  {w:"steady",m:"稳定的"},
+  {w:"stone",m:"石头"},
+  {w:"stream",m:"溪流、流淌"},
+  {w:"stubborn",m:"固执的"},
+  {w:"subject",m:"科目"},
+  {w:"subjective",m:"主观的"},
+  {w:"suitcase",m:"箱子"},
+  {w:"sum",m:"总和"},
+  {w:"suspicious",m:"可疑的"},
+  {w:"sweat",m:"汗水"},
+  {w:"sweep",m:"打扫、清除"},
+  {w:"swell",m:"膨胀、涌"},
+  {w:"swim",m:"游泳"},
+  {w:"symptom",m:"症状"},
+  {w:"tall",m:"高的"},
+  {w:"tease",m:"取笑"},
+  {w:"terminal",m:"终端、终点站、航站楼"},
+  {w:"theatre",m:"剧院"},
+  {w:"there",m:"那里"},
+  {w:"thing",m:"事情"},
+  {w:"threaten",m:"威胁"},
+  {w:"thunder",m:"雷"},
+  {w:"ticket",m:"票"},
+  {w:"tie",m:"系牢、领带、纽带"},
+  {w:"tiny",m:"极小的"},
+  {w:"together",m:"一起"},
+  {w:"total",m:"总共的"},
+  {w:"town",m:"城镇"},
+  {w:"trade",m:"交易"},
+  {w:"traffic",m:"交通"},
+  {w:"treasure",m:"宝藏"},
+  {w:"tune",m:"曲调"},
+  {w:"update",m:"更新"},
+  {w:"variety",m:"多样化、种类"},
+  {w:"vegetable",m:"蔬菜"},
+  {w:"vehicle",m:"车辆"},
+  {w:"very",m:"非常"},
+  {w:"wall",m:"墙壁"},
+  {w:"wallet",m:"钱包"},
+  {w:"war",m:"战争"},
+  {w:"wet",m:"湿的"},
+  {w:"whichever",m:"无论哪一个"},
+  {w:"whole",m:"全部的"},
+  {w:"academic",m:"学术的"},
+  {w:"accomplish",m:"完成"},
+  {w:"accumulate",m:"积累"},
+  {w:"acquaintance",m:"熟人"},
+  {w:"addicted",m:"上瘾的"},
+  {w:"advocate",m:"主张、倡议"},
+  {w:"agency",m:"机构"},
+  {w:"aid",m:"援助"},
+  {w:"alarm",m:"警报"},
+  {w:"album",m:"相册"},
+  {w:"alike",m:"同样地、相似"},
+  {w:"allergic",m:"过敏的"},
+  {w:"animal",m:"动物"},
+  {w:"apart",m:"相隔、分开"},
+  {w:"apple",m:"苹果"},
+  {w:"arrest",m:"逮捕"},
+  {w:"article",m:"文章"},
+  {w:"artificial",m:"人造的"},
+  {w:"atmosphere",m:"气氛"},
+  {w:"author",m:"作者"},
+  {w:"baby",m:"婴儿、宝贝"},
+  {w:"balcony",m:"阳台"},
+  {w:"barely",m:"几乎不、仅仅"},
+  {w:"baseball",m:"棒球"},
+  {w:"basement",m:"地下室"},
+  {w:"basket",m:"篮子"},
+  {w:"basketball",m:"篮球"},
+  {w:"beach",m:"海滩"},
+  {w:"beneath",m:"在……之下"},
+  {w:"betrayal",m:"背叛"},
+  {w:"bike",m:"自行车"},
+  {w:"biscuit",m:"饼干"},
+  {w:"blanket",m:"毯子"},
+  {w:"bless",m:"保佑"},
+  {w:"boat",m:"船"},
+  {w:"bond",m:"纽带"},
+  {w:"bonus",m:"奖金"},
+  {w:"boom",m:"繁荣、迅速发展"},
+  {w:"boss",m:"老板"},
+  {w:"both",m:"两者"},
+  {w:"bottom",m:"底下"},
+  {w:"bounce",m:"反弹、弹起"},
+  {w:"boundary",m:"界限"},
+  {w:"bow",m:"鞠躬"},
+  {w:"bowl",m:"碗"},
+  {w:"brain",m:"大脑"},
+  {w:"brake",m:"刹车"},
+  {w:"bridge",m:"桥梁、纽带"},
+  {w:"broadcast",m:"广播"},
+  {w:"brush",m:"刷子"},
+  {w:"bus",m:"公交车"},
+  {w:"bush",m:"灌木"},
+  {w:"cancer",m:"癌症"},
+  {w:"candidate",m:"候选人"},
+  {w:"canteen",m:"食堂"},
+  {w:"carve",m:"雕刻"},
+  {w:"cave",m:"洞穴"},
+  {w:"ceiling",m:"天花板"},
+  {w:"cent",m:"一分钱"},
+  {w:"certificate",m:"证书"},
+  {w:"channel",m:"频道、隧道"},
+  {w:"chant",m:"吟唱"},
+  {w:"cheek",m:"脸颊"},
+  {w:"cheque",m:"支票"},
+  {w:"chest",m:"胸部"},
+  {w:"cigarette",m:"香烟"},
+  {w:"circumstance",m:"情况"},
+  {w:"claim",m:"宣称、声称、索要"},
+  {w:"clarify",m:"澄清"},
+  {w:"clinic",m:"诊所"},
+  {w:"coach",m:"教练"},
+  {w:"coffee",m:"咖啡"},
+  {w:"college",m:"大学"},
+  {w:"compensation",m:"赔偿"},
+  {w:"comprehension",m:"理解"},
+  {w:"compromise",m:"妥协"},
+  {w:"computer",m:"电脑"},
+  {w:"concert",m:"音乐会"},
+  {w:"condemn",m:"谴责"},
+  {w:"construction",m:"建造"},
+  {w:"consult",m:"咨询"},
+  {w:"contact",m:"联系"},
+  {w:"container",m:"容器"},
+  {w:"controversial",m:"有争议的"},
+  {w:"cookie",m:"饼干"},
+  {w:"counter",m:"柜台、反对的"},
+  {w:"couple",m:"情侣、夫妻"},
+  {w:"crawl",m:"爬"},
+  {w:"crime",m:"罪行"},
+  {w:"criterion",m:"标准"},
+  {w:"curse",m:"诅咒"},
+  {w:"curtain",m:"窗帘"},
+  {w:"daring",m:"大胆的"},
+  {w:"dash",m:"猛冲"},
+  {w:"data",m:"数据"},
+  {w:"daughter",m:"女儿"},
+  {w:"debt",m:"债务"},
+  {w:"define",m:"下定义"},
+  {w:"deliberately",m:"故意地"},
+  {w:"despite",m:"尽管"},
+  {w:"detective",m:"侦探"},
+  {w:"diary",m:"日记"},
+  {w:"dip",m:"蘸"},
+  {w:"disaster",m:"灾难"},
+  {w:"dish",m:"菜肴、碟盘"},
+  {w:"dismiss",m:"解散"},
+  {w:"distinction",m:"区分、卓越"},
+  {w:"drill",m:"训练、钻头"},
+  {w:"drug",m:"药"},
+  {w:"dust",m:"灰尘"},
+  {w:"each",m:"每个"},
+  {w:"edit",m:"编辑"},
+  {w:"either",m:"两者之一"},
+  {w:"elderly",m:"上年纪的"},
+  {w:"election",m:"选举"},
+  {w:"elegant",m:"优雅的"},
+  {w:"else",m:"其他"},
+  {w:"email",m:"电子邮件"},
+  {w:"emotion",m:"情感"},
+  {w:"engage",m:"吸引、使参加"},
+  {w:"engine",m:"引擎"},
+  {w:"enquiry",m:"咨询"},
+  {w:"enterprise",m:"企业、事业"},
+  {w:"entry",m:"条目、进入、参赛作品"},
+  {w:"envelope",m:"信封"},
+  {w:"error",m:"错误"},
+  {w:"European",m:"欧洲的"},
+  {w:"extreme",m:"极端的"},
+  {w:"false",m:"错误的、假的"},
+  {w:"farmer",m:"农民"},
+  {w:"fashion",m:"时尚"},
+  {w:"fasten",m:"系上"},
+  {w:"fate",m:"命运"},
+  {w:"father",m:"父亲"},
+  {w:"fee",m:"费用"},
+  {w:"fellow",m:"同事、同辈"},
+  {w:"festival",m:"节日"},
+  {w:"fetch",m:"取来"},
+  {w:"fierce",m:"凶猛的、激烈的"},
+  {w:"film",m:"电影、胶卷、薄膜"},
+  {w:"finance",m:"财政"},
+  {w:"fish",m:"鱼"},
+  {w:"flame",m:"火焰"},
+  {w:"float",m:"漂浮"},
+  {w:"flood",m:"洪水、淹没"},
+  {w:"floor",m:"地面、楼层"},
+  {w:"foggy",m:"有雾的"},
+  {w:"forehead",m:"前额"},
+  {w:"foresee",m:"预见"},
+  {w:"forever",m:"永远"},
+  {w:"foster",m:"培养、培育"},
+  {w:"found",m:"创立、建立"},
+  {w:"four",m:"四"},
+  {w:"fragile",m:"脆弱的、易碎的"},
+  {w:"fund",m:"资金"},
+  {w:"funeral",m:"葬礼"},
+  {w:"furniture",m:"家具"},
+  {w:"garbage",m:"垃圾"},
+  {w:"garden",m:"花园、园艺"},
+  {w:"gate",m:"大门"},
+  {w:"girl",m:"姑娘"},
+  {w:"glove",m:"手套"},
+  {w:"glue",m:"胶水"},
+  {w:"gold",m:"金子"},
+  {w:"government",m:"政府"},
+  {w:"graph",m:"图表"},
+  {w:"greed",m:"贪婪"},
+  {w:"grey",m:"灰色的"},
+  {w:"guarantee",m:"保证、保障"},
+  {w:"guest",m:"客人"},
+  {w:"gym",m:"健身房"},
+  {w:"harbor",m:"港口"},
+  {w:"headmaster",m:"校长"},
+  {w:"hike",m:"徒步旅行"},
+  {w:"hill",m:"小山"},
+  {w:"hire",m:"雇佣"},
+  {w:"history",m:"历史"},
+  {w:"hole",m:"洞"},
+  {w:"hotel",m:"酒店"},
+  {w:"hour",m:"小时"},
+  {w:"humorous",m:"幽默的"},
+  {w:"hunt",m:"打猎"},
+  {w:"illegally",m:"非法地"},
+  {w:"include",m:"包括"},
+  {w:"indeed",m:"确实"},
+  {w:"ingredient",m:"成分"},
+  {w:"initial",m:"起初的、首字母"},
+  {w:"insert",m:"插入"},
+  {w:"instantly",m:"立即地"},
+  {w:"insurance",m:"保险"},
+  {w:"international",m:"国际的"},
+  {w:"iron",m:"钢铁、熨"},
+  {w:"it",m:"它"},
+  {w:"jacket",m:"夹克"},
+  {w:"jam",m:"拥堵、果酱"},
+  {w:"jar",m:"罐子"},
+  {w:"jealous",m:"嫉妒的"},
+  {w:"jeans",m:"牛仔裤"},
+  {w:"jewel",m:"珠宝"},
+  {w:"joke",m:"笑话"},
+  {w:"kettle",m:"水壶"},
+  {w:"kid",m:"孩子"},
+  {w:"lake",m:"湖"},
+  {w:"lame",m:"瘸的"},
+  {w:"lamp",m:"灯"},
+  {w:"land",m:"着陆、土地"},
+  {w:"large",m:"大的、大量的、广泛的"},
+  {w:"Latino",m:"拉丁美洲人"},
+  {w:"leaf",m:"叶子"},
+  {w:"league",m:"联盟"},
+  {w:"leak",m:"泄露"},
+  {w:"leg",m:"腿"},
+  {w:"library",m:"图书馆"},
+  {w:"license",m:"执照、许可证"},
+  {w:"lightheartedly",m:"无忧无虑地"},
+  {w:"local",m:"当地的"},
+  {w:"location",m:"位置"},
+  {w:"loose",m:"松开、松散的"},
+  {w:"lorry",m:"货车"},
+  {w:"lounge",m:"休息室"},
+  {w:"loyalty",m:"忠诚"},
+  {w:"lunch",m:"午饭"},
+  {w:"madly",m:"疯狂地"},
+  {w:"maintain",m:"保持、维持"},
+  {w:"map",m:"地图"},
+  {w:"marry",m:"结婚"},
+  {w:"mature",m:"成熟的"},
+  {w:"meal",m:"一餐、食物"},
+  {w:"medical",m:"医疗的"},
+  {w:"medium",m:"中等的、媒介"},
+  {w:"mental",m:"精神的"},
+  {w:"menu",m:"菜单"},
+  {w:"mild",m:"温和的"},
+  {w:"monitor",m:"监视器、班长"},
+  {w:"month",m:"月份"},
+  {w:"mop",m:"拖把"},
+  {w:"motto",m:"座右铭"},
+  {w:"mountain",m:"山"},
+  {w:"mouth",m:"嘴"},
+  {w:"movie",m:"电影"},
+  {w:"museum",m:"博物馆"},
+  {w:"mystery",m:"神秘"},
+  {w:"national",m:"国家的"},
+  {w:"neat",m:"整洁的"},
+  {w:"negative",m:"消极的"},
+  {w:"neither",m:"两个都不"},
+  {w:"nest",m:"窝、巢穴"},
+  {w:"night",m:"夜晚"},
+  {w:"noble",m:"高尚的、贵族的"},
+  {w:"nor",m:"也不"},
+  {w:"nurse",m:"护士、护理"},
+  {w:"option",m:"选项"},
+  {w:"origin",m:"起源"},
+  {w:"outspoken",m:"直言不讳的"},
+  {w:"overturn",m:"掀翻、推翻"},
+  {w:"page",m:"页"},
+  {w:"pair",m:"一对"},
+  {w:"pale",m:"苍白的"},
+  {w:"pants",m:"裤子"},
+  {w:"paperwork",m:"文书工作"},
+  {w:"parcel",m:"包裹"},
+  {w:"park",m:"停车、公园"},
+  {w:"particular",m:"特定的"},
+  {w:"password",m:"密码"},
+  {w:"pave",m:"铺路"},
+  {w:"pen",m:"笔、写"},
+  {w:"perhaps",m:"也许"},
+  {w:"period",m:"一段时间"},
+  {w:"permanent",m:"永恒的"},
+  {w:"pet",m:"宠物"},
+  {w:"petrol",m:"汽油"},
+  {w:"ping",m:"叮当响"},
+  {w:"pipe",m:"管道"},
+  {w:"plain",m:"朴素的、简单的、直白的"},
+  {w:"plane",m:"飞机"},
+  {w:"plate",m:"盘子"},
+  {w:"platform",m:"平台"},
+  {w:"playmate",m:"玩伴"},
+  {w:"pocket",m:"口袋"},
+  {w:"poem",m:"诗歌"},
+  {w:"policy",m:"政策"},
+  {w:"pollution",m:"污染"},
+  {w:"pool",m:"池塘"},
+  {w:"postpone",m:"推迟"},
+  {w:"priceless",m:"无价的、极珍贵的"},
+  {w:"principle",m:"原则"},
+  {w:"prohibit",m:"禁止"},
+  {w:"publish",m:"出版"},
+  {w:"punctual",m:"准时的"},
+  {w:"purely",m:"仅仅"},
+  {w:"purse",m:"钱包"},
+  {w:"quiz",m:"小测验"},
+  {w:"rain",m:"雨"},
+  {w:"rate",m:"率、比率、评分"},
+  {w:"recycle",m:"回收利用、再循环"},
+  {w:"regard",m:"看待"},
+  {w:"register",m:"注册"},
+  {w:"reputation",m:"名誉"},
+  {w:"reserve",m:"预定、保留、储备"},
+  {w:"resignation",m:"辞职"},
+  {w:"resolution",m:"决心、决议、坚决"},
+  {w:"restriction",m:"限制"},
+  {w:"restroom",m:"洗手间"},
+  {w:"retell",m:"复述"},
+  {w:"revise",m:"修改"},
+  {w:"rob",m:"抢劫"},
+  {w:"roof",m:"屋顶"},
+  {w:"rose",m:"玫瑰"},
+  {w:"row",m:"行、排"},
+  {w:"royal",m:"皇家的"},
+  {w:"rumor",m:"谣言"},
+  {w:"scan",m:"扫描"},
+  {w:"scenery",m:"风景"},
+  {w:"schoolmate",m:"校友"},
+  {w:"score",m:"分数"},
+  {w:"screen",m:"屏幕"},
+  {w:"sea",m:"大海"},
+  {w:"seal",m:"盖章、密封"},
+  {w:"secretary",m:"秘书"},
+  {w:"security",m:"安全"},
+  {w:"sentence",m:"句子、判决"},
+  {w:"series",m:"系列"},
+  {w:"severe",m:"严重的"},
+  {w:"sew",m:"缝制、缝补"},
+  {w:"shade",m:"阴凉处、暗部"},
+  {w:"shadow",m:"阴影"},
+  {w:"she",m:"她"},
+  {w:"shelter",m:"庇护所"},
+  {w:"shirt",m:"衬衫"},
+  {w:"shoe",m:"鞋子"},
+  {w:"shoot",m:"射击、拍摄"},
+  {w:"showroom",m:"陈列室"},
+  {w:"shut",m:"关上"},
+  {w:"site",m:"景点、站点"},
+  {w:"skate",m:"滑冰"},
+  {w:"skeptical",m:"怀疑的"},
+  {w:"slide",m:"滑行、幻灯片"},
+  {w:"slim",m:"苗条的"},
+  {w:"sniff",m:"嗅、闻"},
+  {w:"society",m:"社会"},
+  {w:"soldier",m:"士兵"},
+  {w:"solid",m:"固体的"},
+  {w:"song",m:"歌曲"},
+  {w:"souvenir",m:"纪念品"},
+  {w:"sponsor",m:"赞助、资助"},
+  {w:"spy",m:"当间谍"},
+  {w:"staff",m:"员工"},
+  {w:"stage",m:"阶段、舞台"},
+  {w:"statue",m:"雕塑"},
+  {w:"status",m:"状态、地位"},
+  {w:"steam",m:"蒸汽"},
+  {w:"stomach",m:"胃"},
+  {w:"storm",m:"风暴"},
+  {w:"strategy",m:"战略"},
+  {w:"submit",m:"递交"},
+  {w:"supper",m:"晚餐"},
+  {w:"surface",m:"表面、浮现"},
+  {w:"surgeon",m:"外科医生"},
+  {w:"sweater",m:"毛衣"},
+  {w:"sword",m:"剑"},
+  {w:"symbol",m:"符号、象征"},
+  {w:"table",m:"桌子"},
+  {w:"tank",m:"坦克、水箱"},
+  {w:"tap",m:"水龙头、轻拍、利用"},
+  {w:"tape",m:"胶带"},
+  {w:"teapot",m:"茶壶"},
+  {w:"temperature",m:"温度"},
+  {w:"tend",m:"趋向于、照料"},
+  {w:"term",m:"学期、任期、术语"},
+  {w:"than",m:"比"},
+  {w:"theme",m:"主题"},
+  {w:"they",m:"他们"},
+  {w:"thick",m:"厚的、浓的"},
+  {w:"thief",m:"小偷"},
+  {w:"three",m:"三"},
+  {w:"tidy",m:"整洁的"},
+  {w:"tip",m:"提示、小费、顶端"},
+  {w:"tongue",m:"舌头、语言"},
+  {w:"tower",m:"塔"},
+  {w:"trial",m:"试用、审判"},
+  {w:"truck",m:"卡车"},
+  {w:"tutor",m:"导师"},
+  {w:"two",m:"二"},
+  {w:"type",m:"类型、打字"},
+  {w:"tyre",m:"轮胎"},
+  {w:"unconsciously",m:"无意识地"},
+  {w:"undertake",m:"承担"},
+  {w:"unique",m:"独一无二的、独特的"},
+  {w:"unite",m:"联合、结合"},
+  {w:"universe",m:"宇宙"},
+  {w:"university",m:"大学"},
+  {w:"us",m:"我们"},
+  {w:"vain",m:"徒劳的"},
+  {w:"valley",m:"山谷"},
+  {w:"vase",m:"花瓶"},
+  {w:"verbal",m:"口头的、语言的"},
+  {w:"violate",m:"违背、侵犯"},
+  {w:"violent",m:"暴力的、强烈的"},
+  {w:"vivid",m:"生动的"},
+  {w:"volleyball",m:"排球"},
+  {w:"voyage",m:"航行"},
+  {w:"we",m:"我们"},
+  {w:"wealth",m:"财富"},
+  {w:"wheel",m:"轮子、方向盘"},
+  {w:"wife",m:"妻子"},
+  {w:"window",m:"窗户"},
+  {w:"wipe",m:"擦除"},
+  {w:"wood",m:"木头、森林"},
+  {w:"workout",m:"锻炼"},
+  {w:"wound",m:"使受伤、伤口"},
+  {w:"year",m:"年"},
+  {w:"yell",m:"喊叫"},
+  {w:"you",m:"你"},
+  {w:"accent",m:"口音"},
+  {w:"adore",m:"崇拜、爱慕"},
+  {w:"agenda",m:"议程、日程"},
+  {w:"allocate",m:"分配"},
+  {w:"alternative",m:"其它选择、供替代的"},
+  {w:"ambulance",m:"救护车"},
+  {w:"apparently",m:"显然"},
+  {w:"bell",m:"钟、铃"},
+  {w:"biological",m:"生物的、有血缘的"},
+  {w:"blue",m:"蓝色的"},
+  {w:"bomb",m:"炸弹"},
+  {w:"boots",m:"靴子"},
+  {w:"brilliant",m:"巧妙的、聪明的"},
+  {w:"catalogue",m:"目录"},
+  {w:"chain",m:"锁链、连锁店"},
+  {w:"click",m:"点击"},
+  {w:"collapse",m:"坍塌"},
+  {w:"combine",m:"合并"},
+  {w:"compose",m:"组成、作曲、撰写"},
+  {w:"comprise",m:"包括、包含"},
+  {w:"concrete",m:"具体的、确实的"},
+  {w:"contest",m:"比赛"},
+  {w:"continent",m:"大陆"},
+  {w:"costume",m:"服装"},
+  {w:"critical",m:"批评的、关键的"},
+  {w:"culture",m:"文化"},
+  {w:"deafening",m:"震耳欲聋的"},
+  {w:"dinner",m:"正餐"},
+  {w:"disease",m:"疾病"},
+  {w:"distinguish",m:"区分、辨别"},
+  {w:"dominate",m:"支配、掌控"},
+  {w:"emphasize",m:"强调"},
+  {w:"essential",m:"重要的"},
+  {w:"excellent",m:"优秀的"},
+  {w:"fantasy",m:"幻想"},
+  {w:"fascinating",m:"令人着迷的"},
+  {w:"fist",m:"拳头"},
+  {w:"flat",m:"水平的、公寓"},
+  {w:"forecast",m:"预报"},
+  {w:"forest",m:"森林"},
+  {w:"frame",m:"框架"},
+  {w:"grab",m:"抓取、夺取"},
+  {w:"grand",m:"壮丽的、宏大的"},
+  {w:"habitat",m:"栖息地"},
+  {w:"hall",m:"大厅"},
+  {w:"harvest",m:"收获"},
+  {w:"humble",m:"谦逊的、卑微的"},
+  {w:"impact",m:"冲击、影响"},
+  {w:"income",m:"收入"},
+  {w:"inquire",m:"询问、查问"},
+  {w:"interrupt",m:"打断说话、中断"},
+  {w:"issue",m:"问题、期刊、发布"},
+  {w:"journal",m:"日记"},
+  {w:"justify",m:"证明……正确、辩护"},
+  {w:"keen",m:"热切的、热情的"},
+  {w:"kingdom",m:"王国"},
+  {w:"kitchen",m:"厨房"},
+  {w:"labor",m:"劳动、劳动力"},
+  {w:"leaping",m:"跳跃、飞跃"},
+  {w:"literary",m:"文学的"},
+  {w:"meanwhile",m:"与此同时"},
+  {w:"mechanical",m:"机械的"},
+  {w:"mode",m:"模式、状态"},
+  {w:"mood",m:"情绪、心情"},
+  {w:"outbreak",m:"爆发"},
+  {w:"passport",m:"护照"},
+  {w:"plot",m:"情节"},
+  {w:"precious",m:"宝贵的"},
+  {w:"precisely",m:"准确地"},
+  {w:"previously",m:"以前"},
+  {w:"pronounce",m:"发音"},
+  {w:"propose",m:"提议"},
+  {w:"pursue",m:"追求"},
+  {w:"random",m:"随机的"},
+  {w:"receipt",m:"收据"},
+  {w:"red",m:"红色的"},
+  {w:"release",m:"释放"},
+  {w:"reveal",m:"揭露、揭示"},
+  {w:"route",m:"路线"},
+  {w:"sale",m:"销售"},
+  {w:"shore",m:"岸上"},
+  {w:"single",m:"单一的"},
+  {w:"sort",m:"种类、排序"},
+  {w:"speech",m:"演讲、发言"},
+  {w:"starve",m:"挨饿"},
+  {w:"stretch",m:"拉伸、延伸"},
+  {w:"stuff",m:"东西、物品"},
+  {w:"such",m:"这样、这种"},
+  {w:"swear",m:"发誓、咒骂"},
+  {w:"swing",m:"摇摆"},
+  {w:"telescopes",m:"望远镜"},
+  {w:"translate",m:"翻译"},
+  {w:"twins",m:"双胞胎"},
+  {w:"ultimately",m:"最终地、最后"},
+  {w:"vacation",m:"假期"},
+  {w:"video",m:"视频"},
+  {w:"yard",m:"院子"},
+  {w:"zone",m:"区域"},
+  {w:"abstract",m:"抽象的"},
+  {w:"abundant",m:"大量的、丰富的"},
+  {w:"accommodate",m:"提供食宿、容纳"},
+  {w:"according to",m:"根据"},
+  {w:"accustomed",m:"习惯的"},
+  {w:"affair",m:"事件、事务"},
+  {w:"African",m:"非洲的、非洲人"},
+  {w:"alright",m:"好吧、令人满意"},
+  {w:"amateur",m:"业余的"},
+  {w:"angel",m:"天使"},
+  {w:"antique",m:"古董、古老的"},
+  {w:"applaud",m:"鼓掌"},
+  {w:"approximately",m:"大约、大概"},
+  {w:"area",m:"地区、区域"},
+  {w:"autonomous",m:"自主的、自治的"},
+  {w:"autumn",m:"秋天"},
+  {w:"awful",m:"可怕的、讨厌的、糟糕的"},
+  {w:"band",m:"乐队、组队"},
+  {w:"bark",m:"犬吠、树皮"},
+  {w:"bird",m:"鸟"},
+  {w:"blank",m:"空白"},
+  {w:"blind",m:"失明的"},
+  {w:"bone",m:"骨头"},
+  {w:"boost",m:"促进"},
+  {w:"budget",m:"预算"},
+  {w:"burnout",m:"筋疲力尽"},
+  {w:"cage",m:"笼子"},
+  {w:"camera",m:"照相机"},
+  {w:"campus",m:"校园"},
+  {w:"capable",m:"有能力的"},
+  {w:"category",m:"类别"},
+  {w:"cease",m:"停止、终止"},
+  {w:"celebrity",m:"名人"},
+  {w:"champion",m:"冠军"},
+  {w:"chemical",m:"化学品"},
+  {w:"cherish",m:"珍惜"},
+  {w:"circulate",m:"循环"},
+  {w:"climate",m:"气候"},
+  {w:"commercial",m:"商业的"},
+  {w:"community",m:"社区"},
+  {w:"complicated",m:"复杂的"},
+  {w:"conservative",m:"保守的"},
+  {w:"contradict",m:"互相矛盾、反驳"},
+  {w:"convey",m:"传递"},
+  {w:"cooperate",m:"合作"},
+  {w:"cope",m:"处理"},
+  {w:"coworker",m:"同事"},
+  {w:"crisis",m:"危机"},
+  {w:"crop",m:"作物、庄稼"},
+  {w:"crutch",m:"拐杖"},
+  {w:"cuisine",m:"美食"},
+  {w:"currently",m:"现在、当前"},
+  {w:"definite",m:"确定的、肯定的"},
+  {w:"deny",m:"否认"},
+  {w:"depart",m:"出发、离开"},
+  {w:"deposit",m:"存款、押金"},
+  {w:"destruction",m:"毁灭"},
+  {w:"device",m:"设备"},
+  {w:"dig",m:"挖掘"},
+  {w:"dilemma",m:"困境"},
+  {w:"display",m:"展示、显示"},
+  {w:"distract",m:"分散注意力、分心"},
+  {w:"diverse",m:"多样的"},
+  {w:"divide",m:"分开、分割"},
+  {w:"divorce",m:"离婚"},
+  {w:"dizzy",m:"眩晕的"},
+  {w:"double",m:"两倍"},
+  {w:"drone",m:"无人机"},
+  {w:"drum",m:"鼓"},
+  {w:"due",m:"到期的"},
+  {w:"dumb",m:"愚蠢的、哑的"},
+  {w:"dynamic",m:"动态的、有活力的、动力"},
+  {w:"economy",m:"经济"},
+  {w:"edge",m:"边缘"},
+  {w:"efficient",m:"有效率的"},
+  {w:"emerge",m:"出现、显露"},
+  {w:"encounter",m:"遭遇、邂逅"},
+  {w:"environment",m:"环境"},
+  {w:"erase",m:"消除"},
+  {w:"erupt",m:"爆发、突发"},
+  {w:"establish",m:"建立"},
+  {w:"estimate",m:"估计"},
+  {w:"except",m:"除了……以外"},
+  {w:"exceptional",m:"杰出的、卓越的、例外的"},
+  {w:"exhausted",m:"筋疲力尽的"},
+  {w:"fancy",m:"花哨的、精美的"},
+  {w:"feather",m:"羽毛"},
+  {w:"feature",m:"特点、以……为特色"},
+  {w:"feedback",m:"反馈"},
+  {w:"fluently",m:"流利地"},
+  {w:"frustrated",m:"沮丧的、懊恼的"},
+  {w:"furthermore",m:"而且"},
+  {w:"gas",m:"煤气、气体"},
+  {w:"generate",m:"生成、产生"},
+  {w:"genetic",m:"遗传的、基因的"},
+  {w:"getaway",m:"逃跑"},
+  {w:"goodbye",m:"再见"},
+  {w:"gracefully",m:"优雅地"},
+  {w:"ground",m:"地面"},
+  {w:"harmony",m:"和谐"},
+  {w:"hat",m:"帽子"},
+  {w:"hatch",m:"孵化、舱门"},
+  {w:"heal",m:"治愈"},
+  {w:"heartbreaking",m:"令人心碎的"},
+  {w:"homeland",m:"祖国"},
+  {w:"icy",m:"冰冷的、冰冻的"},
+  {w:"in spite of",m:"尽管"},
+  {w:"inch",m:"英寸、小心移动"},
+  {w:"infect",m:"使感染"},
+  {w:"inspect",m:"视察、审查"},
+  {w:"interact",m:"互动"},
+  {w:"invest",m:"投资"},
+  {w:"investigate",m:"调查"},
+  {w:"justice",m:"公正"},
+  {w:"kit",m:"工具箱"},
+  {w:"label",m:"标签、贴标签"},
+  {w:"landscape",m:"风景"},
+  {w:"language",m:"语言"},
+  {w:"letdown",m:"失望"},
+  {w:"liberate",m:"解放、使自由"},
+  {w:"literature",m:"文学"},
+  {w:"load",m:"装载"},
+  {w:"log",m:"日志、记录"},
+  {w:"market",m:"市场"},
+  {w:"melt",m:"融化"},
+  {w:"microphone",m:"麦克风"},
+  {w:"middle",m:"中间的"},
+  {w:"millionaire",m:"百万富翁"},
+  {w:"minor",m:"少数的、次要的"},
+  {w:"mission",m:"任务、使命"},
+  {w:"moral",m:"道德的"},
+  {w:"mourn",m:"哀悼"},
+  {w:"multiple",m:"倍数、数量多的"},
+  {w:"net",m:"网"},
+  {w:"nose",m:"鼻子"},
+  {w:"novel",m:"小说、新颖的"},
+  {w:"online",m:"在线的"},
+  {w:"opponent",m:"反对者、对手"},
+  {w:"overall",m:"总体的"},
+  {w:"overnight",m:"一夜之间"},
+  {w:"panel",m:"面板、仪表盘"},
+  {w:"passage",m:"通道、篇章"},
+  {w:"patent",m:"专利"},
+  {w:"paycheck",m:"工资"},
+  {w:"persistence",m:"坚持不懈"},
+  {w:"physical",m:"物理的、身体的"},
+  {w:"pioneer",m:"先锋、先驱"},
+  {w:"plenty",m:"大量"},
+  {w:"pound",m:"心脏狂跳、磅"},
+  {w:"prejudice",m:"偏见"},
+  {w:"principal",m:"校长"},
+  {w:"psychology",m:"心理学"},
+  {w:"quote",m:"引用"},
+  {w:"rapid",m:"快速的"},
+  {w:"raw",m:"生的、原始的"},
+  {w:"recipe",m:"食谱、配方"},
+  {w:"recreation",m:"娱乐活动"},
+  {w:"renew",m:"更新、延长期限"},
+  {w:"resource",m:"资源"},
+  {w:"restore",m:"恢复、复原"},
+  {w:"reunion",m:"团聚"},
+  {w:"rid",m:"摆脱、消除"},
+  {w:"ripe",m:"成熟的"},
+  {w:"rock",m:"岩石、晃动"},
+  {w:"romantic",m:"浪漫的"},
+  {w:"rope",m:"绳子"},
+  {w:"scarcely",m:"几乎不"},
+  {w:"season",m:"季节"},
+  {w:"second",m:"第二、秒"},
+  {w:"seminar",m:"研讨会"},
+  {w:"senior",m:"高级的、年长的"},
+  {w:"shift",m:"转移、变换"},
+  {w:"ship",m:"船、运输"},
+  {w:"snack",m:"零食、小吃"},
+  {w:"sneeze",m:"打喷嚏"},
+  {w:"snowflakes",m:"雪花"},
+  {w:"somehow",m:"以某种方式，不知怎么"},
+  {w:"sour",m:"有酸味的"},
+  {w:"sow",m:"播种"},
+  {w:"spin",m:"旋转"},
+  {w:"sportsmanship",m:"体育精神"},
+  {w:"spotlight",m:"聚光灯"},
+  {w:"squeeze",m:"挤压"},
+  {w:"statistics",m:"统计数据"},
+  {w:"surf",m:"冲浪"},
+  {w:"sustainable",m:"可持续的"},
+  {w:"tail",m:"尾巴"},
+  {w:"tax",m:"税"},
+  {w:"technology",m:"技术"},
+  {w:"tent",m:"帐篷"},
+  {w:"tentative",m:"暂定的、不确定的"},
+  {w:"text",m:"文本、发消息"},
+  {w:"thirsty",m:"口渴的"},
+  {w:"throat",m:"喉咙"},
+  {w:"tournament",m:"锦标赛"},
+  {w:"transfer",m:"转移"},
+  {w:"turnaround",m:"转机、好转"},
+  {w:"twisted",m:"扭曲的"},
+  {w:"ugly",m:"丑的"},
+  {w:"uplift",m:"鼓励、激励"},
+  {w:"virtual",m:"虚拟的"},
+  {w:"vision",m:"视野、想象、视力"},
+  {w:"vital",m:"重要的"},
+  {w:"vote",m:"投票"},
+  {w:"weapon",m:"武器"},
+  {w:"weep",m:"哭泣"},
+  {w:"white",m:"白色的"},
+  {w:"wing",m:"翅膀"},
+  {w:"yellow",m:"黄色的"},
+  {w:"yesterday",m:"昨天"},
+  {w:"become",m:"变成、变得"},
+  {w:"bet",m:"打赌、赌注"},
+  {w:"capacity",m:"容量"},
+  {w:"charity",m:"慈善"},
+  {w:"client",m:"客户"},
+  {w:"clue",m:"线索、提示"},
+  {w:"column",m:"柱子、专栏、栏目"},
+  {w:"contract",m:"合同、合约、收缩"},
+  {w:"contrast",m:"对比、反差"},
+  {w:"core",m:"核心、主要的"},
+  {w:"crucial",m:"关键的"},
+  {w:"decent",m:"体面的、得体的"},
+  {w:"demonstrate",m:"表现、展示"},
+  {w:"discipline",m:"纪律"},
+  {w:"dramatic",m:"戏剧性的、引人注目的"},
+  {w:"duration",m:"持续时间、期间"},
+  {w:"element",m:"元素"},
+  {w:"enhance",m:"增强"},
+  {w:"extent",m:"程度"},
+  {w:"external",m:"外部的"},
+  {w:"extinction",m:"灭绝"},
+  {w:"facility",m:"设施"},
+  {w:"factor",m:"因素"},
+  {w:"flavour",m:"风味、口味"},
+  {w:"gap",m:"间隙、缺口、空白"},
+  {w:"highlight",m:"突出、强调"},
+  {w:"illustrate",m:"说明、展示"},
+  {w:"image",m:"图像、形象"},
+  {w:"imply",m:"意味着、暗示"},
+  {w:"incredible",m:"难以置信的、极好的"},
+  {w:"individual",m:"个体的、个别的、个人"},
+  {w:"infer",m:"推理、推断"},
+  {w:"innovation",m:"创新"},
+  {w:"insight",m:"洞察力"},
+  {w:"instance",m:"例子"},
+  {w:"integrate",m:"整合"},
+  {w:"intense",m:"强烈的、激烈的"},
+  {w:"joint",m:"联合的、关节"},
+  {w:"launch",m:"发射、发起、发动"},
+  {w:"motion",m:"运动、动作"},
+  {w:"motive",m:"动机、目的"},
+  {w:"odd",m:"奇怪的、反常的"},
+  {w:"organic",m:"有机的"},
+  {w:"pessimistic",m:"悲观的"},
+  {w:"priority",m:"优先权、优先事项"},
+  {w:"proceed",m:"继续、前进"},
+  {w:"profile",m:"简介、概述、形象"},
+  {w:"region",m:"地区"},
+  {w:"resident",m:"居民、居住的"},
+  {w:"sample",m:"样品、样本"},
+  {w:"source",m:"来源、起源"},
+  {w:"species",m:"物种"},
+  {w:"structure",m:"结构、体系"},
+  {w:"survey",m:"民意调查"},
+  {w:"tackle",m:"解决、处理、应付"},
+  {w:"territory",m:"领土、领地"},
+  {w:"tone",m:"语气、口吻"}
+];
+
+/* ==========================================================
+   初始进度（等你的词表 / 进度 / 错题后我填这里）
+   orderFrom: 从头数第几个词开始背（0 基，12 表示前 12 个已背过）
+   wrong: 你手动记下来的错题（会直接进错题本）
+   ========================================================== */
+const SEED = { version:'v2', orderFrom:376, wrong:['realize', 'discover', 'pass', 'question', 'order', 'ask', 'consider', 'manage', 'hurt', 'intention', 'sign', 'lift', 'urge', 'if', 'admit', 'move', 'struggle', 'puzzle', 'drop', 'delight', 'sympathy', 'shock', 'instruction', 'lie', 'present', 'add'] };
+
+/* ================= 状态 ================= */
+const LSKEY = 'ciyu.state.v1';
+const DECKKEY = 'ciyu.deck.v1';
+const DECK_VERSION = 'deck-2';
+const $ = s => document.querySelector(s);
+
+let WORDS = DEMO.slice();
+let BY = {};
+function rebuild(){ BY = {}; WORDS.forEach(x => { BY[x.w] = x; }); }
+try {
+  const d = JSON.parse(localStorage.getItem(DECKKEY) || 'null');
+  if (d && d.v === DECK_VERSION && Array.isArray(d.words) && d.words.length >= 3 && d.words.every(x => x && x.w && x.m)) WORDS = d.words;
+} catch (e) {}
+rebuild();
+
+function defaultState(){ return { records:{}, groupSize:30, session:null, days:{}, seedVersion:'', orderFrom:0 }; }
+let S = (function(){
+  try {
+    const o = JSON.parse(localStorage.getItem(LSKEY) || 'null');
+    if (o && typeof o === 'object') {
+      return { records:o.records||{}, groupSize:o.groupSize||30, session:o.session||null, days:o.days||{}, seedVersion:o.seedVersion||'', orderFrom:o.orderFrom||0 };
+    }
+  } catch (e) {}
+  return defaultState();
+})();
+function save(){ try { localStorage.setItem(LSKEY, JSON.stringify(S)); } catch (e) {} }
+
+let cur = null, revealed = false, hist = [], last = null;
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function bumpToday(){ const k = todayKey(); S.days[k] = (S.days[k]||0) + 1; }
+function rec(w){ let r = S.records[w]; if (!r) { r = S.records[w] = { miss:0, streak:0, known:false }; } return r; }
+function shuffle(a){ a = a.slice(); for (let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function vibrate(ms){ if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+let toastTimer = null;
+function toast(msg){
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  requestAnimationFrame(() => t.classList.add('on'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 1900);
+}
+
+function groups(){
+  const n = Math.max(5, Math.min(100, S.groupSize || 30));
+  const out = [];
+  for (let i = 0; i < WORDS.length; i += n) out.push(WORDS.slice(i, i+n).map(x => x.w));
+  return out;
+}
+function wrongList(){
+  return WORDS.map(x => x.w).filter(w => { const r = S.records[w]; return r && r.miss > 0 && !r.known; });
+}
+function titleFor(s){
+  if (s.mode === 'group') return '第 ' + (s.g+1) + ' 组';
+  if (s.mode === 'order') return '顺序';
+  if (s.mode === 'shuffle') return '全书乱序';
+  if (s.mode === 'wrong') return '错题本';
+  return '重刷';
+}
+
+/* ================= 路由 ================= */
+function route(name){
+  ['home','study','result','wrong','set'].forEach(v => {
+    const el = document.getElementById('v-' + v);
+    if (el) el.classList.toggle('on', v === name);
+  });
+}
+
+/* ================= 首页 ================= */
+function renderHome(){
+  const wl = wrongList();
+  $('#h-total').textContent = WORDS.length;
+  $('#h-wrong').textContent = wl.length;
+  $('#h-today').textContent = S.days[todayKey()] || 0;
+
+  const s = S.session;
+  const rb = $('#btn-resume');
+  if (s && s.list && s.pos < s.list.length) {
+    const p = progressOf(s);
+    rb.style.display = 'flex';
+    rb.innerHTML = '<b>继续</b><span>' + titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total + '</span>';
+  } else {
+    rb.style.display = 'none';
+  }
+  $('#wrong-sub').textContent = wl.length ? (wl.length + ' 个词待复习') : '暂无错题';
+
+  const os = $('#order-sub');
+  if (s && s.mode === 'order' && s.pos < s.list.length) os.textContent = '进行中 · 第 ' + ((s.base||0) + s.pos + 1) + ' 个';
+  else if (S.orderFrom > 0) os.textContent = '从第 ' + (S.orderFrom+1) + ' 个开始（前面已背过）';
+  else os.textContent = '从头开始，每个词只出现一次';
+
+  route('home');
+}
+function goHome(){ renderHome(); }
+
+/* ================= 开始一轮 ================= */
+function startGuard(mode, opt){
+  const s = S.session;
+  const same = s && s.pos > 0 && s.mode === mode && (!opt || opt.g === undefined || opt.g === s.g);
+  if (same) { route('study'); showStudy(); return; }
+  if (s && s.pos > 0 && !confirm('还有未完成的一轮（' + titleFor(s) + ' ' + (s.pos+1) + '/' + s.list.length + '），开始新的会覆盖它。继续？')) return;
+  start(mode, opt);
+}
+
+function start(mode, opt){
+  opt = opt || {};
+  let list = [], g = null, base = 0;
+  if (mode === 'group') { g = opt.g; const gs = groups(); list = (gs[g]||[]).slice(); }
+  else if (mode === 'order') { base = Math.max(0, Math.min(WORDS.length - 1, S.orderFrom || 0)); list = WORDS.slice(base).map(x => x.w); }
+  else if (mode === 'shuffle') { list = shuffle(WORDS.map(x => x.w)); }
+  else if (mode === 'wrong') { list = shuffle(wrongList()); }
+  else if (mode === 'custom') { list = (opt.list||[]).slice(); }
+  list = list.filter(w => BY[w]);
+  if (!list.length) { toast('没有可背的词'); return; }
+
+  S.session = { mode:mode, g:g, base:base, list:list, pos:0, known:0, missed:[], results:{}, t:Date.now() };
+  hist = [];
+  save();
+  route('study');
+  showStudy();
+}
+
+/* ================= 背诵 ================= */
+function showStudy(){
+  const s = S.session;
+  if (!s || !s.list || !s.list.length) { goHome(); return; }
+  if (s.pos >= s.list.length) { finish(); return; }
+  cur = BY[s.list[s.pos]];
+  if (!cur) { s.pos++; showStudy(); return; }
+  route('study');
+  paintCard();
+}
+
+function progressOf(s){
+  if (s.mode === 'order') return { cur:(s.base||0) + s.pos, total:WORDS.length };
+  return { cur:s.pos, total:s.list.length };
+}
+
+function paintCard(){
+  const s = S.session, w = cur;
+  const p = progressOf(s);
+  $('#s-word').textContent = w.w;
+  $('#s-ph').textContent = w.ph || '';
+  $('#mean').textContent = w.m;
+  $('#s-bar').style.width = (p.cur / p.total * 100) + '%';
+  setRev(false);
+  fitWord();
+  paintBtns();
+}
+
+function paintBtns(){
+  const s = S.session, marked = s && s.results[cur.w] === 'm';
+  const m = $('#btn-miss'), n = $('#btn-next');
+  m.disabled = !!marked;
+  m.textContent = marked ? '已记录' : '不会';
+  n.textContent = marked ? '下一个' : '会了';
+  $('#s-hint').textContent = marked ? '已记入错题本，看一眼释义，点「下一个」继续' : '';
+  $('#paper').classList.toggle('missed', !!marked);
+  if (s) {
+    const p = progressOf(s);
+    const missN = s.missed.length;
+    $('#s-title').textContent = titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total;
+    $('#s-count').textContent = missN ? ('不会 ' + missN) : '';
+  }
+}
+
+function setRev(v){
+  revealed = v;
+  $('#paper').classList.toggle('rev', v);
+}
+
+function fitWord(){
+  const el = $('#s-word'), wrap = el.parentElement;
+  el.style.fontSize = '';
+  if (wrap.clientWidth < 60) return;
+  let size = parseFloat(getComputedStyle(el).fontSize);
+  let guard = 0;
+  while (el.scrollWidth > wrap.clientWidth - 4 && size > 19 && guard++ < 80) {
+    size -= 2;
+    el.style.fontSize = size + 'px';
+  }
+}
+
+function pushHist(){
+  const s = S.session, w = cur.w;
+  hist.push({
+    w:w, pos:s.pos,
+    st:(w in s.results) ? s.results[w] : null,
+    known:s.known,
+    missed:s.missed.slice(),
+    rec:Object.assign({}, rec(w))
+  });
+  if (hist.length > 80) hist.shift();
+}
+
+function onMiss(){
+  const s = S.session;
+  if (!s || !cur) return;
+  if (s.results[cur.w] === 'm') return;
+  pushHist();
+  s.results[cur.w] = 'm';
+  s.missed.push(cur.w);
+  const r = rec(cur.w);
+  r.miss = (r.miss||0) + 1;
+  r.streak = 0;
+  r.known = false;
+  bumpToday();
+  setRev(true);
+  paintBtns();
+  save();
+  vibrate(20);
+}
+
+function onKnow(){
+  const s = S.session;
+  if (!s || !cur) return;
+  const alreadyMissed = s.results[cur.w] === 'm';
+  if (!alreadyMissed) {
+    pushHist();
+    s.results[cur.w] = 'k';
+    s.known++;
+    const r = rec(cur.w);
+    r.streak = (r.streak||0) + 1;
+    if (r.miss > 0 && r.streak >= 2 && !r.known) {
+      r.known = true;
+      toast('「' + cur.w + '」连续答对 2 次，已移出错题本');
+    }
+    bumpToday();
+  }
+  s.pos++;
+  if (s.mode === 'order') S.orderFrom = Math.min(WORDS.length, (s.base||0) + s.pos);
+  save();
+  if (s.pos >= s.list.length) { finish(); return; }
+  cur = BY[s.list[s.pos]];
+  if (!cur) { finish(); return; }
+  paintCard();
+}
+
+function onUndo(){
+  const h = hist.pop();
+  if (!h) { toast('没有可以撤回的操作'); return; }
+  const s = S.session;
+  if (!s) { goHome(); return; }
+  S.records[h.w] = Object.assign({}, h.rec);
+  if (h.st === null) delete s.results[h.w]; else s.results[h.w] = h.st;
+  s.known = h.known;
+  s.missed = h.missed;
+  s.pos = h.pos;
+  if (s.mode === 'order') S.orderFrom = Math.min(WORDS.length, (s.base||0) + s.pos);
+  cur = BY[h.w] || cur;
+  save();
+  route('study');
+  paintCard();
+  vibrate(8);
+}
+
+function finish(){
+  last = S.session;
+  S.session = null;
+  hist = [];
+  save();
+  renderResult();
+  route('result');
+}
+
+/* ================= 结算 ================= */
+function renderResult(){
+  const s = last;
+  if (!s) { goHome(); return; }
+  $('#r-title').textContent = titleFor(s) + ' · 完成';
+  $('#r-total').textContent = s.list.length;
+  $('#r-known').textContent = s.known;
+  $('#r-miss').textContent = s.missed.length;
+
+  const box = $('#r-list');
+  box.innerHTML = '';
+  if (!s.missed.length) {
+    box.innerHTML = '<div class="empty">这一轮全部会了，一个都没漏。</div>';
+  } else {
+    s.missed.forEach(w => {
+      const o = BY[w] || { w:w, m:'' };
+      const d = document.createElement('div');
+      d.className = 'mrow';
+      const b = document.createElement('b');
+      b.textContent = o.w;
+      const sp = document.createElement('span');
+      sp.textContent = o.m;
+      d.appendChild(b); d.appendChild(sp);
+      box.appendChild(d);
+    });
+  }
+
+  const acts = $('#r-actions');
+  acts.innerHTML = '';
+  const add = (label, fn, cls) => {
+    const b = document.createElement('button');
+    b.className = 'abtn ' + (cls || 'pri');
+    b.textContent = label;
+    b.onclick = fn;
+    acts.appendChild(b);
+  };
+  if (s.missed.length) {
+    add('只刷这 ' + s.missed.length + ' 个', () => start('custom', { list:s.missed }), 'pri');
+  }
+  if (s.mode === 'group') {
+    if (s.g + 1 < groups().length) add('第 ' + (s.g+2) + ' 组', () => start('group', { g:s.g+1 }), 'sec');
+    add('再来一遍本组', () => start('group', { g:s.g }), 'sec');
+  } else if (s.mode === 'shuffle') {
+    add('换一副牌再来一遍', () => start('shuffle'), 'sec');
+  } else if (s.mode === 'order') {
+    add('从头再来一遍', () => { S.orderFrom = 0; save(); start('order'); }, 'sec');
+  } else if (s.mode === 'wrong') {
+    add('再复习一遍', () => start('wrong'), 'sec');
+  } else {
+    add('再刷一遍', () => start('custom', { list:s.list }), 'sec');
+  }
+  add('回首页', goHome, 'txt');
+}
+
+/* ================= 错题本 ================= */
+function openWrong(){
+  const list = wrongList();
+  $('#w-count').textContent = list.length;
+  const box = $('#w-list');
+  box.innerHTML = '';
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">错题本是空的。<br>背的时候点「不会」，词会自动进来。</div>';
+  } else {
+    list.forEach(w => {
+      const r = S.records[w] || {};
+      const o = BY[w] || { w:w, m:'' };
+      const d = document.createElement('div');
+      d.className = 'mrow';
+      const b = document.createElement('b');
+      b.textContent = o.w;
+      const sp = document.createElement('span');
+      sp.textContent = o.m;
+      const cnt = document.createElement('em');
+      cnt.className = 'cnt';
+      cnt.textContent = '错 ' + (r.miss||0);
+      const x = document.createElement('button');
+      x.className = 'x';
+      x.textContent = '×';
+      x.onclick = () => {
+        if (confirm('把「' + w + '」移出错题本？')) {
+          r.known = true;
+          r.streak = 2;
+          save();
+          openWrong();
+        }
+      };
+      d.appendChild(b); d.appendChild(sp); d.appendChild(cnt); d.appendChild(x);
+      box.appendChild(d);
+    });
+  }
+  const btn = $('#w-start');
+  btn.disabled = !list.length;
+  btn.textContent = list.length ? ('开始复习 · ' + list.length + ' 词（乱序）') : '暂无可复习的词';
+  route('wrong');
+}
+
+/* ================= 设置 ================= */
+function openSet(){
+  document.querySelectorAll('#seg-size button').forEach(b => {
+    b.classList.toggle('on', Number(b.dataset.n) === Number(S.groupSize));
+  });
+  route('set');
+}
+
+/* ================= 弹层 / 重置 ================= */
+function openModal(cfg){
+  $('#m-title').textContent = cfg.title || '';
+  $('#m-body').textContent = cfg.body || '';
+  const acts = $('#m-acts');
+  acts.innerHTML = '';
+  (cfg.actions || []).forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'abtn ' + (a.cls || 'sec');
+    b.textContent = a.label;
+    b.onclick = a.fn;
+    acts.appendChild(b);
+  });
+  $('#modal').classList.add('on');
+}
+function closeModal(){ $('#modal').classList.remove('on'); }
+
+function openReset(){
+  const s = S.session;
+  const inRound = !!(s && s.list && s.pos < s.list.length);
+  const n = wrongList().length;
+  openModal({
+    title: inRound ? '结束本轮并清空错题本？' : '清空错题本？',
+    body: (inRound ? titleFor(s) + ' · ' + (s.pos+1) + '/' + s.list.length + '\n本轮进度不会保留。\n\n' : '') +
+          '错题本里的 ' + n + ' 个词会全部清空，无法恢复。',
+    actions: [
+      { label:'清空并结束', cls:'danger', fn: doReset },
+      { label:'取消', cls:'txt', fn: closeModal }
+    ]
+  });
+}
+function doReset(){
+  S.session = null;
+  S.records = {};
+  hist = [];
+  save();
+  closeModal();
+  goHome();
+  toast('本轮已结束，错题本已清空');
+}
+
+function applySeed(){
+  if (!SEED || S.seedVersion === SEED.version) return;
+  S.seedVersion = SEED.version;
+  S.orderFrom = Math.max(0, Math.min(WORDS.length, SEED.orderFrom || 0));
+  S.session = null;
+  (SEED.wrong || []).forEach(w => {
+    const key = String(w).trim();
+    if (!BY[key]) return;
+    const r = rec(key);
+    r.miss = Math.max(1, r.miss || 0);
+    r.streak = 0;
+    r.known = false;
+  });
+  save();
+}
+
+function parseDeck(text){
+  const out = [];
+  text.split(/\r?\n/).forEach(raw => {
+    let line = raw.replace(/\u00a0/g, ' ').replace(/^\s*\d+[\.、\)）]\s*/, '').trim();
+    if (!line) return;
+    if (/^[#\/]{1,2}/.test(line)) return;
+    let w = '', ph = '', m = '';
+    if (line.indexOf('\t') >= 0) {
+      const p = line.split('\t').map(x => x.trim()).filter(Boolean);
+      if (p.length >= 2) {
+        w = p[0];
+        let rest = p.slice(1);
+        if (rest.length > 1 && /^[\/\[].*[\/\]]$/.test(rest[0])) { ph = rest.shift(); }
+        m = rest.join('；');
+      }
+    }
+    if (!w || !m) {
+      const mm = line.match(/^([A-Za-z][A-Za-z'’\-\.]*)\s*(\/[^\/]+\/|\[[^\]]+\])?\s+(.+)$/);
+      if (mm) { w = mm[1]; ph = mm[2] || ''; m = mm[3]; }
+    }
+    if (w && m) out.push({ w:w.replace(/[\.\s]+$/, ''), ph:ph, m:m.trim() });
+  });
+  return out;
+}
+
+/* ================= 绑定 ================= */
+$('#btn-order').onclick = () => startGuard('order');
+$('#btn-shuffle').onclick = () => startGuard('shuffle');
+$('#btn-wrong-mode').onclick = () => { if (wrongList().length) startGuard('wrong'); else openWrong(); };
+$('#btn-resume').onclick = () => { route('study'); showStudy(); };
+$('#btn-set').onclick = openSet;
+$('#set-back').onclick = goHome;
+$('#w-back').onclick = goHome;
+$('#r-home').onclick = goHome;
+
+$('#btn-back').onclick = () => { save(); goHome(); };
+$('#btn-miss').onclick = onMiss;
+$('#btn-next').onclick = onKnow;
+$('#btn-undo').onclick = onUndo;
+$('#paper').onclick = () => setRev(!revealed);
+
+$('#btn-reset').onclick = openReset;
+$('#w-clear').onclick = openReset;
+$('#m-mask').onclick = closeModal;
+
+$('#w-start').onclick = () => { if (wrongList().length) start('wrong'); };
+
+$('#imp-btn').onclick = () => {
+  const arr = parseDeck($('#imp').value || '');
+  if (arr.length < 3) { toast('没解析出足够的词，检查一下格式'); return; }
+  if (!confirm('将用 ' + arr.length + ' 个词替换当前词库？\n错题记录会按单词保留。')) return;
+  WORDS = arr;
+  rebuild();
+  try { localStorage.setItem(DECKKEY, JSON.stringify({ v:DECK_VERSION, words:WORDS })); } catch (e) {}
+  S.session = null;
+  hist = [];
+  save();
+  $('#imp').value = '';
+  toast('已导入 ' + arr.length + ' 个词');
+  goHome();
+};
+
+$('#bak-exp').onclick = () => {
+  const data = { v:1, orderFrom:S.orderFrom, records:S.records, days:S.days };
+  const el = $('#bak');
+  el.value = JSON.stringify(data);
+  el.focus();
+  el.select();
+  let copied = false;
+  try { copied = document.execCommand('copy'); } catch (e) {}
+  toast(copied ? '备份已生成并复制' : '备份已生成，长按文本框全选复制');
+};
+
+$('#bak-imp').onclick = () => {
+  try {
+    const o = JSON.parse(($('#bak').value || '').trim());
+    if (!o || typeof o !== 'object' || !o.records) throw new Error('bad');
+    S.records = o.records;
+    S.orderFrom = o.orderFrom || 0;
+    S.days = o.days || {};
+    S.session = null;
+    hist = [];
+    save();
+    $('#bak').value = '';
+    toast('已恢复备份');
+    goHome();
+  } catch (e) {
+    toast('备份内容不对，检查一下是否复制完整');
+  }
+};
+
+$('#reset-btn').onclick = () => {
+  openModal({
+    title: '清空全部数据？',
+    body: '进度、错题本、今日统计全部清空，词库保留。',
+    actions: [
+      { label:'全部清空', cls:'danger', fn: () => {
+          const d = defaultState();
+          d.seedVersion = SEED.version;
+          S = d;
+          hist = [];
+          save();
+          closeModal();
+          toast('已清空全部数据');
+          goHome();
+        } },
+      { label:'取消', cls:'txt', fn: closeModal }
+    ]
+  });
+};
+
+/* 启动 */
+applySeed();
+$('#s-word').style.fontSize = '';
+renderHome();
+route('home');
+</script>
+</body>
+</html>
