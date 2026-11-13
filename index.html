@@ -6,8 +6,10 @@
 <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="遮词">
+<meta name="apple-mobile-web-app-title" content="背单词">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
 <title>遮词 · 背单词</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -107,6 +109,10 @@ button{font:inherit;color:inherit}
 .btn.miss{height:58px;background:var(--card);border:1.5px solid var(--red);color:var(--red);font-size:16px;font-weight:600;letter-spacing:.06em;box-shadow:0 8px 20px -14px rgba(40,25,10,.7)}
 .btn.miss[disabled]{opacity:.4;border-color:var(--line);color:var(--ink2);box-shadow:none}
 .btn.next{height:66px;background:var(--ink);color:var(--bg);font-size:17px;font-weight:700;letter-spacing:.04em;box-shadow:0 12px 26px -14px rgba(0,0,0,.6)}
+.btn.prev{height:40px;background:transparent;border:1px solid var(--line);color:var(--ink2);font-size:12.5px;letter-spacing:.02em;border-radius:12px;box-shadow:none}
+.btn.prev:active{background:rgba(128,110,80,.1)}
+.paper.instant .cover,.paper.instant .mean{transition:none!important}
+.opt-a.num{font-size:12.5px;letter-spacing:.02em;opacity:.9}
 .rail-cap{margin-top:1px;text-align:center;font-size:11px;line-height:14px;min-height:14px;color:var(--red);letter-spacing:.02em}
 
 /* ---------- 结算 ---------- */
@@ -137,6 +143,10 @@ button{font:inherit;color:inherit}
 .tip code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px}
 textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:13.5px;line-height:1.7;resize:vertical;margin-bottom:12px;user-select:text;-webkit-user-select:text}
 
+.jump{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.jump input{flex:1;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:16px;padding:0 14px;user-select:text;-webkit-user-select:text}
+.jump button{width:118px;flex:none;height:48px}
+
 /* ---------- 弹层 ---------- */
 .modal{position:fixed;inset:0;z-index:200;visibility:hidden;opacity:0;transition:opacity .2s ease,visibility 0s .26s}
 .modal.on{visibility:visible;opacity:1;transition:opacity .2s ease,visibility 0s}
@@ -165,21 +175,20 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
         <div class="hero-num" id="h-total">0</div>
         <div class="hero-lbl">个词 · 错题 <b id="h-wrong">0</b> · 今日已背 <b id="h-today">0</b></div>
       </div>
-      <button class="resume" id="btn-resume" style="display:none"></button>
       <button class="opt" id="btn-order">
         <span class="opt-i">↓</span>
-        <span class="opt-b"><b>顺序背诵</b><i id="order-sub">从头开始，每个词只出现一次</i></span>
-        <span class="opt-a">›</span>
+        <span class="opt-b"><b>顺序背诵</b></span>
+        <span class="opt-a" id="order-st">›</span>
       </button>
       <button class="opt" id="btn-shuffle">
         <span class="opt-i">⤨</span>
-        <span class="opt-b"><b>全书乱序一遍</b><i>打乱顺序，每个词只出现一次</i></span>
-        <span class="opt-a">›</span>
+        <span class="opt-b"><b>全书乱序一遍</b></span>
+        <span class="opt-a" id="shuffle-st">›</span>
       </button>
       <button class="opt" id="btn-wrong-mode">
         <span class="opt-i">✗</span>
-        <span class="opt-b"><b>错题本复习</b><i id="wrong-sub">暂无错题</i></span>
-        <span class="opt-a">›</span>
+        <span class="opt-b"><b>错题本复习</b></span>
+        <span class="opt-a" id="wrong-st">›</span>
       </button>
       <div class="foot-note">进度自动存在这台设备上，关掉也不会丢。</div>
     </div>
@@ -189,9 +198,8 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
   <section class="view" id="v-study">
     <div class="top">
       <button class="icon" id="btn-back" aria-label="返回">‹</button>
-      <div class="top-t" id="s-title">第 1 组 · 1/30</div>
+      <div class="top-t" id="s-title">顺序 · 1/2050</div>
       <div class="top-r">
-        <button class="icon" id="btn-undo" aria-label="撤回" style="font-size:19px">↩</button>
         <button class="tx" id="btn-reset">重置</button>
       </div>
     </div>
@@ -210,6 +218,7 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
       <div class="hint" id="s-hint"></div>
     </div>
     <div class="rail">
+      <button class="btn prev" id="btn-prev">↩ 上一个</button>
       <button class="btn miss" id="btn-miss">不会</button>
       <button class="btn next" id="btn-next">会了</button>
       <div class="rail-cap" id="s-count"></div>
@@ -254,6 +263,12 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
       <div style="width:40px;flex:none"></div>
     </div>
     <div class="scroll">
+      <div class="sec-t">起始位置</div>
+      <p class="tip">想从第几个词开始背，就在这里改（比如你背到 500，就填 501）。改完从「顺序背诵」进去。</p>
+      <div class="jump">
+        <input id="jump" type="number" min="1" inputmode="numeric" placeholder="第几个">
+        <button class="abtn sec" id="jump-btn">跳到这里</button>
+      </div>
       <div class="sec-t">替换词库</div>
       <p class="tip">每行一个词：<code>abandon 放弃；抛弃</code>　也支持从 Excel 直接粘贴（单词和释义之间用 Tab）。</p>
       <textarea id="imp" placeholder="abandon&#9;放弃；抛弃&#10;ability&#9;能力&#10;&#10;也可以直接：abandon 放弃；抛弃"></textarea>
@@ -2343,7 +2358,7 @@ const DEMO = [
    orderFrom: 从头数第几个词开始背（0 基，12 表示前 12 个已背过）
    wrong: 你手动记下来的错题（会直接进错题本）
    ========================================================== */
-const SEED = { version:'v2', orderFrom:376, wrong:['realize', 'discover', 'pass', 'question', 'order', 'ask', 'consider', 'manage', 'hurt', 'intention', 'sign', 'lift', 'urge', 'if', 'admit', 'move', 'struggle', 'puzzle', 'drop', 'delight', 'sympathy', 'shock', 'instruction', 'lie', 'present', 'add'] };
+const SEED = { version:'v3', orderFrom:561, wrong:['appointment', 'attempt', 'guilty', 'view', 'raise', 'settle', 'upset', 'condition', 'sight', 'commitment', 'complete', 'figure', 'mark', 'match', 'desperate'] };
 
 /* ================= 状态 ================= */
 const LSKEY = 'ciyu.state.v1';
@@ -2360,19 +2375,20 @@ try {
 } catch (e) {}
 rebuild();
 
-function defaultState(){ return { records:{}, groupSize:30, session:null, days:{}, seedVersion:'', orderFrom:0 }; }
+function defaultState(){ return { records:{}, sessions:{}, days:{}, seedVersion:'', orderFrom:0 }; }
 let S = (function(){
   try {
     const o = JSON.parse(localStorage.getItem(LSKEY) || 'null');
     if (o && typeof o === 'object') {
-      return { records:o.records||{}, groupSize:o.groupSize||30, session:o.session||null, days:o.days||{}, seedVersion:o.seedVersion||'', orderFrom:o.orderFrom||0 };
+      return { records:o.records||{}, sessions:o.sessions||{}, days:o.days||{}, seedVersion:o.seedVersion||'', orderFrom:o.orderFrom||0 };
     }
   } catch (e) {}
   return defaultState();
 })();
 function save(){ try { localStorage.setItem(LSKEY, JSON.stringify(S)); } catch (e) {} }
 
-let cur = null, revealed = false, hist = [], last = null;
+let cur = null, revealed = false, last = null, curMode = null;
+const hists = { order:[], shuffle:[], wrong:[], custom:[] };
 
 function todayKey(){
   const d = new Date();
@@ -2419,101 +2435,96 @@ function route(name){
 }
 
 /* ================= 首页 ================= */
+function setSt(sel, txt, num){
+  const el = $(sel);
+  if (!el) return;
+  el.textContent = txt;
+  el.classList.toggle('num', !!num);
+}
+
+function posText(s){
+  const p = progressOf(s);
+  return (p.cur + 1) + '/' + p.total;
+}
+
 function renderHome(){
   const wl = wrongList();
   $('#h-total').textContent = WORDS.length;
   $('#h-wrong').textContent = wl.length;
   $('#h-today').textContent = S.days[todayKey()] || 0;
 
-  const s = S.session;
-  const rb = $('#btn-resume');
-  if (s && s.list && s.pos < s.list.length) {
-    const p = progressOf(s);
-    rb.style.display = 'flex';
-    rb.innerHTML = '<b>继续</b><span>' + titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total + '</span>';
-  } else {
-    rb.style.display = 'none';
-  }
-  $('#wrong-sub').textContent = wl.length ? (wl.length + ' 个词待复习') : '暂无错题';
-
-  const os = $('#order-sub');
-  if (s && s.mode === 'order' && s.pos < s.list.length) os.textContent = '进行中 · 第 ' + ((s.base||0) + s.pos + 1) + ' 个';
-  else if (S.orderFrom > 0) os.textContent = '从第 ' + (S.orderFrom+1) + ' 个开始（前面已背过）';
-  else os.textContent = '从头开始，每个词只出现一次';
+  const so = S.sessions.order, ss = S.sessions.shuffle, sw = S.sessions.wrong;
+  setSt('#order-st', so ? posText(so) : '›', !!so);
+  setSt('#shuffle-st', ss ? posText(ss) : '›', !!ss);
+  setSt('#wrong-st', sw ? posText(sw) : (wl.length ? String(wl.length) : '›'), !!(sw || wl.length));
 
   route('home');
 }
 function goHome(){ renderHome(); }
 
 /* ================= 开始一轮 ================= */
-function startGuard(mode, opt){
-  const s = S.session;
-  const same = s && s.pos > 0 && s.mode === mode && (!opt || opt.g === undefined || opt.g === s.g);
-  if (same) { route('study'); showStudy(); return; }
-  if (s && s.pos > 0 && !confirm('还有未完成的一轮（' + titleFor(s) + ' ' + (s.pos+1) + '/' + s.list.length + '），开始新的会覆盖它。继续？')) return;
-  start(mode, opt);
-}
-
 function start(mode, opt){
   opt = opt || {};
-  let list = [], g = null, base = 0;
-  if (mode === 'group') { g = opt.g; const gs = groups(); list = (gs[g]||[]).slice(); }
-  else if (mode === 'order') { base = Math.max(0, Math.min(WORDS.length - 1, S.orderFrom || 0)); list = WORDS.slice(base).map(x => x.w); }
+  let list = [], base = 0;
+  if (mode === 'order') { base = Math.max(0, Math.min(WORDS.length - 1, S.orderFrom || 0)); list = WORDS.slice(base).map(x => x.w); }
   else if (mode === 'shuffle') { list = shuffle(WORDS.map(x => x.w)); }
   else if (mode === 'wrong') { list = shuffle(wrongList()); }
-  else if (mode === 'custom') { list = (opt.list||[]).slice(); }
+  else if (mode === 'custom') { list = (opt.list || []).slice(); }
   list = list.filter(w => BY[w]);
-  if (!list.length) { toast('没有可背的词'); return; }
+  if (!list.length) { toast(mode === 'wrong' ? '错题本是空的' : '没有可背的词'); return; }
 
-  S.session = { mode:mode, g:g, base:base, list:list, pos:0, known:0, missed:[], results:{}, t:Date.now() };
-  hist = [];
+  S.sessions[mode] = { mode:mode, base:base, list:list, pos:0, known:0, missed:[], results:{}, t:Date.now() };
+  hists[mode] = [];
   save();
-  route('study');
-  showStudy();
+  openSession(mode);
 }
 
-/* ================= 背诵 ================= */
-function showStudy(){
-  const s = S.session;
-  if (!s || !s.list || !s.list.length) { goHome(); return; }
+function openSession(mode){
+  const s = S.sessions[mode];
+  if (!s) { goHome(); return; }
+  curMode = mode;
   if (s.pos >= s.list.length) { finish(); return; }
   cur = BY[s.list[s.pos]];
-  if (!cur) { s.pos++; showStudy(); return; }
+  if (!cur) { s.pos++; save(); openSession(mode); return; }
   route('study');
   paintCard();
 }
 
+/* ================= 背诵 ================= */
 function progressOf(s){
   if (s.mode === 'order') return { cur:(s.base||0) + s.pos, total:WORDS.length };
   return { cur:s.pos, total:s.list.length };
 }
 
 function paintCard(){
-  const s = S.session, w = cur;
+  const s = S.sessions[curMode];
+  if (!s || !cur) return;
   const p = progressOf(s);
-  $('#s-word').textContent = w.w;
-  $('#s-ph').textContent = w.ph || '';
-  $('#mean').textContent = w.m;
-  $('#s-bar').style.width = (p.cur / p.total * 100) + '%';
+  const paper = $('#paper');
+  paper.classList.add('instant');
   setRev(false);
+  $('#s-word').textContent = cur.w;
+  $('#s-ph').textContent = cur.ph || '';
+  $('#mean').textContent = cur.m;
+  $('#s-bar').style.width = (p.cur / p.total * 100) + '%';
   fitWord();
   paintBtns();
+  requestAnimationFrame(() => requestAnimationFrame(() => paper.classList.remove('instant')));
 }
 
 function paintBtns(){
-  const s = S.session, marked = s && s.results[cur.w] === 'm';
+  const s = S.sessions[curMode];
+  if (!s || !cur) return;
+  const marked = s.results[cur.w] === 'm';
   const m = $('#btn-miss'), n = $('#btn-next');
-  m.disabled = !!marked;
+  m.disabled = marked;
   m.textContent = marked ? '已记录' : '不会';
   n.textContent = marked ? '下一个' : '会了';
   $('#s-hint').textContent = marked ? '已记入错题本，看一眼释义，点「下一个」继续' : '';
-  $('#paper').classList.toggle('missed', !!marked);
-  if (s) {
-    const p = progressOf(s);
-    const missN = s.missed.length;
-    $('#s-title').textContent = titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total;
-    $('#s-count').textContent = missN ? ('不会 ' + missN) : '';
-  }
+  $('#paper').classList.toggle('missed', marked);
+  const p = progressOf(s);
+  $('#s-title').textContent = titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total;
+  $('#s-count').textContent = s.missed.length ? ('不会 ' + s.missed.length) : '';
 }
 
 function setRev(v){
@@ -2534,19 +2545,21 @@ function fitWord(){
 }
 
 function pushHist(){
-  const s = S.session, w = cur.w;
-  hist.push({
-    w:w, pos:s.pos,
-    st:(w in s.results) ? s.results[w] : null,
+  const s = S.sessions[curMode];
+  if (!s) return;
+  const h = hists[curMode] || (hists[curMode] = []);
+  h.push({
+    w:cur.w, pos:s.pos,
+    st:(cur.w in s.results) ? s.results[cur.w] : null,
     known:s.known,
     missed:s.missed.slice(),
-    rec:Object.assign({}, rec(w))
+    rec:Object.assign({}, rec(cur.w))
   });
-  if (hist.length > 80) hist.shift();
+  if (h.length > 60) h.shift();
 }
 
 function onMiss(){
-  const s = S.session;
+  const s = S.sessions[curMode];
   if (!s || !cur) return;
   if (s.results[cur.w] === 'm') return;
   pushHist();
@@ -2564,7 +2577,7 @@ function onMiss(){
 }
 
 function onKnow(){
-  const s = S.session;
+  const s = S.sessions[curMode];
   if (!s || !cur) return;
   const alreadyMissed = s.results[cur.w] === 'm';
   if (!alreadyMissed) {
@@ -2589,17 +2602,18 @@ function onKnow(){
 }
 
 function onUndo(){
-  const h = hist.pop();
-  if (!h) { toast('没有可以撤回的操作'); return; }
-  const s = S.session;
+  const s = S.sessions[curMode];
+  const h = hists[curMode] || [];
+  const item = h.pop();
+  if (!item) { toast(s && s.pos > 0 ? '前面没有可以回退的记录了' : '已经是第一个了'); return; }
   if (!s) { goHome(); return; }
-  S.records[h.w] = Object.assign({}, h.rec);
-  if (h.st === null) delete s.results[h.w]; else s.results[h.w] = h.st;
-  s.known = h.known;
-  s.missed = h.missed;
-  s.pos = h.pos;
+  S.records[item.w] = Object.assign({}, item.rec);
+  if (item.st === null) delete s.results[item.w]; else s.results[item.w] = item.st;
+  s.known = item.known;
+  s.missed = item.missed;
+  s.pos = item.pos;
   if (s.mode === 'order') S.orderFrom = Math.min(WORDS.length, (s.base||0) + s.pos);
-  cur = BY[h.w] || cur;
+  cur = BY[item.w] || cur;
   save();
   route('study');
   paintCard();
@@ -2607,9 +2621,11 @@ function onUndo(){
 }
 
 function finish(){
-  last = S.session;
-  S.session = null;
-  hist = [];
+  const s = S.sessions[curMode];
+  if (!s) { goHome(); return; }
+  last = s;
+  delete S.sessions[curMode];
+  hists[curMode] = [];
   save();
   renderResult();
   route('result');
@@ -2654,18 +2670,10 @@ function renderResult(){
   if (s.missed.length) {
     add('只刷这 ' + s.missed.length + ' 个', () => start('custom', { list:s.missed }), 'pri');
   }
-  if (s.mode === 'group') {
-    if (s.g + 1 < groups().length) add('第 ' + (s.g+2) + ' 组', () => start('group', { g:s.g+1 }), 'sec');
-    add('再来一遍本组', () => start('group', { g:s.g }), 'sec');
-  } else if (s.mode === 'shuffle') {
-    add('换一副牌再来一遍', () => start('shuffle'), 'sec');
-  } else if (s.mode === 'order') {
-    add('从头再来一遍', () => { S.orderFrom = 0; save(); start('order'); }, 'sec');
-  } else if (s.mode === 'wrong') {
-    add('再复习一遍', () => start('wrong'), 'sec');
-  } else {
-    add('再刷一遍', () => start('custom', { list:s.list }), 'sec');
-  }
+  if (s.mode === 'shuffle') add('换一副牌再来一遍', () => start('shuffle'), 'sec');
+  else if (s.mode === 'order') add('从头再来一遍', () => { S.orderFrom = 0; save(); start('order'); }, 'sec');
+  else if (s.mode === 'wrong') add('再复习一遍', () => start('wrong'), 'sec');
+  else if (s.mode === 'custom') add('再刷一遍', () => start('custom', { list:s.list }), 'sec');
   add('回首页', goHome, 'txt');
 }
 
@@ -2713,10 +2721,21 @@ function openWrong(){
 
 /* ================= 设置 ================= */
 function openSet(){
-  document.querySelectorAll('#seg-size button').forEach(b => {
-    b.classList.toggle('on', Number(b.dataset.n) === Number(S.groupSize));
-  });
+  const j = $('#jump');
+  if (j) j.value = String((S.orderFrom || 0) + 1);
   route('set');
+}
+
+function jumpTo(){
+  let n = parseInt(($('#jump').value || '').trim(), 10);
+  if (!n || n < 1) { toast('先输入一个数字'); return; }
+  n = Math.min(n, WORDS.length);
+  S.orderFrom = n - 1;
+  S.sessions = {};
+  hists.order = []; hists.shuffle = []; hists.wrong = []; hists.custom = [];
+  save();
+  toast('已设成从第 ' + n + ' 个开始');
+  goHome();
 }
 
 /* ================= 弹层 / 重置 ================= */
@@ -2737,7 +2756,8 @@ function openModal(cfg){
 function closeModal(){ $('#modal').classList.remove('on'); }
 
 function openReset(){
-  const s = S.session;
+  const inStudy = document.getElementById('v-study').classList.contains('on');
+  const s = (inStudy && curMode) ? S.sessions[curMode] : null;
   const inRound = !!(s && s.list && s.pos < s.list.length);
   const n = wrongList().length;
   openModal({
@@ -2751,20 +2771,22 @@ function openReset(){
   });
 }
 function doReset(){
-  S.session = null;
+  const inStudy = document.getElementById('v-study').classList.contains('on');
+  if (inStudy && curMode) { delete S.sessions[curMode]; hists[curMode] = []; }
   S.records = {};
-  hist = [];
   save();
   closeModal();
   goHome();
-  toast('本轮已结束，错题本已清空');
+  toast(inStudy ? '本轮已结束，错题本已清空' : '错题本已清空');
 }
 
 function applySeed(){
   if (!SEED || S.seedVersion === SEED.version) return;
   S.seedVersion = SEED.version;
-  S.orderFrom = Math.max(0, Math.min(WORDS.length, SEED.orderFrom || 0));
-  S.session = null;
+  if (SEED.orderFrom > 0) {
+    S.orderFrom = Math.min(WORDS.length, SEED.orderFrom);
+    delete S.sessions.order;
+  }
   (SEED.wrong || []).forEach(w => {
     const key = String(w).trim();
     if (!BY[key]) return;
@@ -2802,10 +2824,13 @@ function parseDeck(text){
 }
 
 /* ================= 绑定 ================= */
-$('#btn-order').onclick = () => startGuard('order');
-$('#btn-shuffle').onclick = () => startGuard('shuffle');
-$('#btn-wrong-mode').onclick = () => { if (wrongList().length) startGuard('wrong'); else openWrong(); };
-$('#btn-resume').onclick = () => { route('study'); showStudy(); };
+$('#btn-order').onclick = () => S.sessions.order ? openSession('order') : start('order');
+$('#btn-shuffle').onclick = () => S.sessions.shuffle ? openSession('shuffle') : start('shuffle');
+$('#btn-wrong-mode').onclick = () => {
+  if (S.sessions.wrong) openSession('wrong');
+  else if (wrongList().length) start('wrong');
+  else openWrong();
+};
 $('#btn-set').onclick = openSet;
 $('#set-back').onclick = goHome;
 $('#w-back').onclick = goHome;
@@ -2814,10 +2839,11 @@ $('#r-home').onclick = goHome;
 $('#btn-back').onclick = () => { save(); goHome(); };
 $('#btn-miss').onclick = onMiss;
 $('#btn-next').onclick = onKnow;
-$('#btn-undo').onclick = onUndo;
+$('#btn-prev').onclick = onUndo;
 $('#paper').onclick = () => setRev(!revealed);
 
 $('#btn-reset').onclick = openReset;
+$('#jump-btn').onclick = jumpTo;
 $('#w-clear').onclick = openReset;
 $('#m-mask').onclick = closeModal;
 
@@ -2830,8 +2856,8 @@ $('#imp-btn').onclick = () => {
   WORDS = arr;
   rebuild();
   try { localStorage.setItem(DECKKEY, JSON.stringify({ v:DECK_VERSION, words:WORDS })); } catch (e) {}
-  S.session = null;
-  hist = [];
+  S.sessions = {};
+  hists.order = []; hists.shuffle = []; hists.wrong = []; hists.custom = [];
   save();
   $('#imp').value = '';
   toast('已导入 ' + arr.length + ' 个词');
@@ -2856,8 +2882,8 @@ $('#bak-imp').onclick = () => {
     S.records = o.records;
     S.orderFrom = o.orderFrom || 0;
     S.days = o.days || {};
-    S.session = null;
-    hist = [];
+    S.sessions = {};
+    hists.order = []; hists.shuffle = []; hists.wrong = []; hists.custom = [];
     save();
     $('#bak').value = '';
     toast('已恢复备份');
@@ -2876,7 +2902,7 @@ $('#reset-btn').onclick = () => {
           const d = defaultState();
           d.seedVersion = SEED.version;
           S = d;
-          hist = [];
+          hists.order = []; hists.shuffle = []; hists.wrong = []; hists.custom = [];
           save();
           closeModal();
           toast('已清空全部数据');
