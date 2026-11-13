@@ -14,59 +14,59 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#f5f1e8; --ink:#211d17; --ink2:#7a7163; --line:#e4dccd;
+  --bg:#f5f1e8; --ink:#211d17; --ink2:#6b6255; --line:#e6dfd1;
   --card:#fffdf7; --red:#b8402f; --green:#2c6e54;
-  --shadow:0 12px 30px -14px rgba(70,52,20,.45);
+  --shadow:0 10px 24px -16px rgba(60,45,20,.42);
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#141210; --ink:#efe8db; --ink2:#9c9282; --line:#332d25;
+    --bg:#141210; --ink:#efe8db; --ink2:#a89e8d; --line:#332d25;
     --card:#262119; --red:#d4685a; --green:#5aa886;
-    --shadow:0 12px 30px -14px rgba(0,0,0,.85);
+    --shadow:0 10px 24px -16px rgba(0,0,0,.9);
   }
 }
 html,body{height:100%}
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
   overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;
 }
 button{font:inherit;color:inherit}
+button:focus-visible,.paper:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .app{position:relative;height:100vh;height:100dvh;overflow:hidden}
 .view{position:absolute;inset:0;display:none;flex-direction:column;user-select:none;-webkit-user-select:none}
 .view.on{display:flex}
 
 /* ---------- 通用 ---------- */
-.hd{display:flex;align-items:center;gap:6px;padding:calc(14px + env(safe-area-inset-top)) 16px 6px;flex:none}
-.hd-t{flex:1;font-size:15px;font-weight:600;letter-spacing:.02em}
+.hd{display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 16px 8px;flex:none}
+.hd-t{flex:1;font-size:15px;font-weight:600;letter-spacing:.01em}
 .hd-t.center{text-align:center}
-.icon{width:40px;height:40px;border:none;background:transparent;color:var(--ink2);font-size:22px;line-height:1;display:grid;place-items:center;border-radius:12px;flex:none}
+.icon{width:40px;height:40px;border:none;background:transparent;color:var(--ink2);display:grid;place-items:center;border-radius:10px;flex:none;padding:0}
+.icon svg{display:block}
 .icon:active{background:rgba(128,110,80,.12)}
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 18px calc(28px + env(safe-area-inset-bottom))}
-.sec-t{margin:24px 2px 10px;font-size:12px;letter-spacing:.16em;color:var(--ink2)}
-.empty{padding:34px 6px;color:var(--ink2);font-size:14px;text-align:center;line-height:1.8}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px calc(28px + env(safe-area-inset-bottom))}
+.sec-t{margin:28px 0 8px;font-size:12px;letter-spacing:.06em;color:var(--ink2)}
+.empty{padding:32px 8px;color:var(--ink2);font-size:14px;text-align:center;line-height:1.8}
 
 /* ---------- 首页 ---------- */
-.hero{padding:22px 2px 18px}
-.hero-num{font-family:Georgia,"Times New Roman",serif;font-size:60px;line-height:1;letter-spacing:-2px}
-.hero-lbl{margin-top:10px;color:var(--ink2);font-size:13px}
+.hero{padding:24px 0 20px}
+.hero-num{font-family:Georgia,"Times New Roman",serif;font-size:68px;line-height:1;letter-spacing:-2px}
+.hero-lbl{margin-top:12px;color:var(--ink2);font-size:13px}
 .hero-lbl b{color:var(--ink);font-weight:600}
-.resume{display:flex;align-items:center;width:100%;gap:10px;padding:15px 16px;border-radius:16px;border:none;background:var(--ink);color:var(--bg);margin-bottom:14px;text-align:left}
-.resume b{font-size:15px;font-weight:600}
-.resume span{margin-left:auto;font-size:12.5px;opacity:.72}
-.opt{display:flex;align-items:center;gap:13px;width:100%;padding:15px;border:1px solid var(--line);background:var(--card);border-radius:16px;margin-bottom:10px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
-.opt:active{transform:scale(.986)}
-.opt-i{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--bg);font-size:16px;color:var(--ink2);flex:none}
+.opt{display:flex;align-items:center;gap:14px;width:100%;padding:16px;border:1px solid var(--line);background:var(--card);border-radius:14px;margin-bottom:10px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.opt:active{transform:scale(.99)}
+.opt-i{width:20px;height:20px;display:grid;place-items:center;color:var(--ink2);flex:none}
 .opt-b{flex:1;min-width:0}
-.opt-b b{display:block;font-size:15.5px;font-weight:600}
-.opt-b i{display:block;font-style:normal;font-size:12.5px;color:var(--ink2);margin-top:3px}
-.opt-a{color:var(--ink2);font-size:20px;flex:none;opacity:.7}
-.row{display:flex;align-items:center;width:100%;padding:14px 15px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;text-align:left}
+.opt-b b{display:block;font-size:15px;font-weight:600;letter-spacing:.01em}
+.opt-b i{display:block;font-style:normal;font-size:12.5px;color:var(--ink2);margin-top:4px}
+.opt-a{color:var(--ink2);font-size:20px;flex:none;opacity:.6}
+.row{display:flex;align-items:center;width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;text-align:left}
 .row:active{transform:scale(.99)}
 .row b{font-size:15px;font-weight:600}
-.row i{font-style:normal;font-size:12.5px;color:var(--ink2);margin-left:9px}
+.row i{font-style:normal;font-size:12.5px;color:var(--ink2);margin-left:8px}
 .row-a{margin-left:auto;color:var(--ink2);font-size:13px}
-.foot-note{margin:26px 2px 0;font-size:12px;color:var(--ink2);opacity:.8;line-height:1.7}
+.foot-note{margin:24px 0 0;font-size:12px;color:var(--ink2);line-height:1.7}
 
 /* ---------- 背诵 ---------- */
 .top{position:relative;display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top)) 10px 4px;flex:none}
@@ -86,7 +86,7 @@ button{font:inherit;color:inherit}
   position:relative;width:100%;min-height:170px;border-radius:14px;
   background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);
   transform:rotate(-.45deg);display:flex;align-items:center;justify-content:center;
-  padding:26px 22px;transition:transform .18s ease,border-color .18s ease;
+  padding:24px 20px;transition:transform .18s ease,border-color .18s ease;
 }
 .paper:active{transform:rotate(-.45deg) scale(.992)}
 .paper::after{
@@ -95,39 +95,39 @@ button{font:inherit;color:inherit}
   box-shadow:0 1px 2px rgba(0,0,0,.05);pointer-events:none;
 }
 .paper.missed{border-color:rgba(184,64,47,.38)}
-.cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:13px;background:var(--card);color:var(--ink2);font-size:13.5px;letter-spacing:.18em;transition:opacity .2s ease,transform .2s ease}
+.cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:13px;background:var(--card);color:var(--ink2);font-size:13.5px;letter-spacing:.08em;transition:opacity .2s ease,transform .2s ease}
 .cover span{opacity:.62}
 .paper.rev .cover{opacity:0;transform:translateY(-8px);pointer-events:none}
 .mean{font-size:21px;line-height:1.62;text-align:center;opacity:0;transform:translateY(7px);transition:opacity .24s ease,transform .24s ease}
 .paper.rev .mean{opacity:1;transform:none}
-.hint{height:20px;margin-top:9px;font-size:12px;color:var(--ink2);text-align:center;letter-spacing:.03em;flex:none}
+.hint{height:20px;margin-top:8px;font-size:12px;color:var(--ink2);text-align:center;letter-spacing:.02em;flex:none}
 .foot-r{margin-left:auto;padding-bottom:4px;text-align:right;color:var(--ink2);font-size:12px;line-height:1.7}
 .foot-r.rd{color:var(--red)}
-.rail{position:absolute;right:10px;top:58%;transform:translateY(-50%);width:76px;display:flex;flex-direction:column;gap:10px;z-index:3}
-.btn{width:100%;border-radius:15px;border:none;transition:transform .08s ease,opacity .15s ease}
+.rail{position:absolute;right:12px;top:58%;transform:translateY(-50%);width:76px;display:flex;flex-direction:column;gap:8px;z-index:3}
+.btn{width:100%;border-radius:12px;border:none;transition:transform .08s ease,opacity .15s ease}
 .btn:active{transform:scale(.96)}
-.btn.miss{height:58px;background:var(--card);border:1.5px solid var(--red);color:var(--red);font-size:16px;font-weight:600;letter-spacing:.06em;box-shadow:0 8px 20px -14px rgba(40,25,10,.7)}
+.btn.miss{height:56px;background:var(--card);border:1px solid var(--red);color:var(--red);font-size:16px;font-weight:600;letter-spacing:.04em;box-shadow:0 8px 20px -16px rgba(40,25,10,.8)}
 .btn.miss[disabled]{opacity:.4;border-color:var(--line);color:var(--ink2);box-shadow:none}
-.btn.next{height:66px;background:var(--ink);color:var(--bg);font-size:17px;font-weight:700;letter-spacing:.04em;box-shadow:0 12px 26px -14px rgba(0,0,0,.6)}
-.btn.prev{height:40px;background:transparent;border:1px solid var(--line);color:var(--ink2);font-size:12.5px;letter-spacing:.02em;border-radius:12px;box-shadow:none}
+.btn.next{height:64px;background:var(--ink);color:var(--bg);font-size:17px;font-weight:600;letter-spacing:.02em;box-shadow:0 10px 24px -18px rgba(0,0,0,.7)}
+.btn.prev{height:40px;background:transparent;border:1px solid var(--line);color:var(--ink2);font-size:12.5px;letter-spacing:.02em;border-radius:10px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:4px}
 .btn.prev:active{background:rgba(128,110,80,.1)}
 .paper.instant .cover,.paper.instant .mean{transition:none!important}
 .opt-a.num{font-size:12.5px;letter-spacing:.02em;opacity:.9}
-.rail-cap{margin-top:1px;text-align:center;font-size:11px;line-height:14px;min-height:14px;color:var(--red);letter-spacing:.02em}
+.rail-cap{margin-top:2px;text-align:center;font-size:11px;line-height:14px;min-height:14px;color:var(--red);letter-spacing:.02em}
 
 /* ---------- 结算 ---------- */
-.stat3{display:flex;gap:9px;margin:14px 0 4px}
-.stat3 > div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center}
+.stat3{display:flex;gap:8px;margin:16px 0 4px}
+.stat3 > div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 8px;text-align:center}
 .stat3 b{display:block;font-family:Georgia,serif;font-size:26px;line-height:1.1}
 .stat3 i{display:block;font-style:normal;font-size:11.5px;color:var(--ink2);margin-top:4px}
 .stat3 .rd{color:var(--red)}
-.mrow{display:flex;align-items:baseline;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.mrow{display:flex;align-items:baseline;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
 .mrow b{font-family:Georgia,serif;font-size:16.5px;font-weight:600;flex:none;max-width:46%}
 .mrow span{color:var(--ink2);font-size:13px;line-height:1.5;flex:1;text-align:right}
 .mrow .cnt{font-style:normal;font-size:11px;color:var(--red);background:rgba(184,64,47,.09);border-radius:6px;padding:2px 6px;margin-left:8px;flex:none}
 .x{width:26px;height:26px;border:none;background:transparent;color:var(--ink2);font-size:15px;flex:none;opacity:.55}
-.bottom{flex:none;display:flex;flex-direction:column;gap:9px;padding:12px 18px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
-.abtn{width:100%;height:52px;border-radius:14px;border:1px solid transparent;font-size:16px;font-weight:600;transition:transform .08s ease}
+.bottom{flex:none;display:flex;flex-direction:column;gap:8px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
+.abtn{width:100%;height:52px;border-radius:12px;border:1px solid transparent;font-size:16px;font-weight:600;transition:transform .08s ease}
 .abtn:active{transform:scale(.985)}
 .abtn.pri{background:var(--ink);color:var(--bg)}
 .abtn.sec{background:var(--card);color:var(--ink);border-color:var(--line)}
@@ -168,7 +168,7 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
   <section class="view on" id="v-home">
     <div class="hd">
       <div class="hd-t">遮词</div>
-      <button class="icon" id="btn-set" aria-label="设置">⚙</button>
+      <button class="icon" id="btn-set" aria-label="设置"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg></button>
     </div>
     <div class="scroll">
       <div class="hero">
@@ -176,28 +176,28 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
         <div class="hero-lbl">个词 · 错题 <b id="h-wrong">0</b> · 今日已背 <b id="h-today">0</b></div>
       </div>
       <button class="opt" id="btn-order">
-        <span class="opt-i">↓</span>
+        <span class="opt-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg></span>
         <span class="opt-b"><b>顺序背诵</b></span>
         <span class="opt-a" id="order-st">›</span>
       </button>
       <button class="opt" id="btn-shuffle">
-        <span class="opt-i">⤨</span>
+        <span class="opt-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.8-1.1 2-1.7 3.3-1.7H22"/><path d="M18 2l4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="M18 14l4 4-4 4"/></svg></span>
         <span class="opt-b"><b>全书乱序一遍</b></span>
         <span class="opt-a" id="shuffle-st">›</span>
       </button>
       <button class="opt" id="btn-wrong-mode">
-        <span class="opt-i">✗</span>
+        <span class="opt-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></span>
         <span class="opt-b"><b>错题本复习</b></span>
         <span class="opt-a" id="wrong-st">›</span>
       </button>
-      <div class="foot-note">进度自动存在这台设备上，关掉也不会丢。</div>
+      <div class="foot-note">进度存在本机，关掉不丢。</div>
     </div>
   </section>
 
   <!-- ================= 背诵 ================= -->
   <section class="view" id="v-study">
     <div class="top">
-      <button class="icon" id="btn-back" aria-label="返回">‹</button>
+      <button class="icon" id="btn-back" aria-label="返回"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <div class="top-t" id="s-title">顺序 · 1/2050</div>
       <div class="top-r">
         <button class="tx" id="btn-reset">重置</button>
@@ -218,7 +218,7 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
       <div class="hint" id="s-hint"></div>
     </div>
     <div class="rail">
-      <button class="btn prev" id="btn-prev">↩ 上一个</button>
+      <button class="btn prev" id="btn-prev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>上一个</span></button>
       <button class="btn miss" id="btn-miss">不会</button>
       <button class="btn next" id="btn-next">会了</button>
       <div class="rail-cap" id="s-count"></div>
@@ -2520,7 +2520,7 @@ function paintBtns(){
   m.disabled = marked;
   m.textContent = marked ? '已记录' : '不会';
   n.textContent = marked ? '下一个' : '会了';
-  $('#s-hint').textContent = marked ? '已记入错题本，看一眼释义，点「下一个」继续' : '';
+  $('#s-hint').textContent = marked ? '已记入错题本 · 看完点「下一个」' : '';
   $('#paper').classList.toggle('missed', marked);
   const p = progressOf(s);
   $('#s-title').textContent = titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total;
