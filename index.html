@@ -108,6 +108,7 @@ button:focus-visible,.paper:focus-visible{outline:2px solid var(--ink);outline-o
 .btn:active{transform:scale(.96)}
 .btn.miss{height:56px;background:var(--card);border:1px solid var(--red);color:var(--red);font-size:16px;font-weight:600;letter-spacing:.04em;box-shadow:0 8px 20px -16px rgba(40,25,10,.8)}
 .btn.miss[disabled]{opacity:.4;border-color:var(--line);color:var(--ink2);box-shadow:none}
+.btn.miss.on{background:rgba(184,64,47,.08);box-shadow:none}
 .btn.next{height:64px;background:var(--ink);color:var(--bg);font-size:17px;font-weight:600;letter-spacing:.02em;box-shadow:0 10px 24px -18px rgba(0,0,0,.7)}
 .btn.prev{height:40px;background:transparent;border:1px solid var(--line);color:var(--ink2);font-size:12.5px;letter-spacing:.02em;border-radius:10px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:4px}
 .btn.prev:active{background:rgba(128,110,80,.1)}
@@ -127,6 +128,7 @@ button:focus-visible,.paper:focus-visible{outline:2px solid var(--ink);outline-o
 .mrow .cnt{font-style:normal;font-size:11px;color:var(--red);background:rgba(184,64,47,.09);border-radius:6px;padding:2px 6px;margin-left:8px;flex:none}
 .x{width:26px;height:26px;border:none;background:transparent;color:var(--ink2);font-size:15px;flex:none;opacity:.55}
 .bottom{flex:none;display:flex;flex-direction:column;gap:8px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
+.bottom-note{font-size:11.5px;color:var(--ink2);text-align:center;margin-bottom:2px}
 .abtn{width:100%;height:52px;border-radius:12px;border:1px solid transparent;font-size:16px;font-weight:600;transition:transform .08s ease}
 .abtn:active{transform:scale(.985)}
 .abtn.pri{background:var(--ink);color:var(--bg)}
@@ -252,7 +254,7 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
       <button class="tx" id="w-clear">清空</button>
     </div>
     <div class="scroll"><div id="w-list"></div></div>
-    <div class="bottom"><button class="abtn pri" id="w-start">开始复习</button></div>
+    <div class="bottom"><div class="bottom-note">每次重新打乱 · 同一个词一轮只出现一次</div><button class="abtn pri" id="w-start">乱序考核</button></div>
   </section>
 
   <!-- ================= 设置 ================= -->
@@ -274,8 +276,8 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
       <textarea id="imp" placeholder="abandon&#9;放弃；抛弃&#10;ability&#9;能力&#10;&#10;也可以直接：abandon 放弃；抛弃"></textarea>
       <button class="abtn pri" id="imp-btn">导入并替换词库</button>
       <div class="sec-t">备份 / 换设备</div>
-      <p class="tip">换网址或换手机时，先导出备份，到新地址粘贴恢复。词库不用管，只有进度和错题。</p>
-      <textarea id="bak" placeholder="点「导出备份」会生成一串文本，复制保存好（可以发给自己）"></textarea>
+      <p class="tip">点「导出备份」会弹出系统分享菜单，存到备忘录或发给自己。换设备时把那段文字粘回来，点「从备份恢复」。</p>
+      <textarea id="bak" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="点「导出备份」会生成备份并弹出分享菜单，存到备忘录或发给自己"></textarea>
       <button class="abtn pri" id="bak-exp">导出备份</button>
       <div style="height:9px"></div>
       <button class="abtn sec" id="bak-imp">从备份恢复</button>
@@ -2358,7 +2360,7 @@ const DEMO = [
    orderFrom: 从头数第几个词开始背（0 基，12 表示前 12 个已背过）
    wrong: 你手动记下来的错题（会直接进错题本）
    ========================================================== */
-const SEED = { version:'v3', orderFrom:561, wrong:['appointment', 'attempt', 'guilty', 'view', 'raise', 'settle', 'upset', 'condition', 'sight', 'commitment', 'complete', 'figure', 'mark', 'match', 'desperate'] };
+const SEED = { version:'v4', orderFrom:0, wrong:[] };
 
 /* ================= 状态 ================= */
 const LSKEY = 'ciyu.state.v1';
@@ -2416,7 +2418,14 @@ function groups(){
   return out;
 }
 function wrongList(){
-  return WORDS.map(x => x.w).filter(w => { const r = S.records[w]; return r && r.miss > 0 && !r.known; });
+  const seen = new Set(), out = [];
+  WORDS.forEach(x => {
+    if (seen.has(x.w)) return;
+    seen.add(x.w);
+    const r = S.records[x.w];
+    if (r && r.miss > 0 && !r.known) out.push(x.w);
+  });
+  return out;
 }
 function titleFor(s){
   if (s.mode === 'group') return '第 ' + (s.g+1) + ' 组';
@@ -2469,7 +2478,7 @@ function start(mode, opt){
   if (mode === 'order') { base = Math.max(0, Math.min(WORDS.length - 1, S.orderFrom || 0)); list = WORDS.slice(base).map(x => x.w); }
   else if (mode === 'shuffle') { list = shuffle(WORDS.map(x => x.w)); }
   else if (mode === 'wrong') { list = shuffle(wrongList()); }
-  else if (mode === 'custom') { list = (opt.list || []).slice(); }
+  else if (mode === 'custom') { list = Array.from(new Set(opt.list || [])); }
   list = list.filter(w => BY[w]);
   if (!list.length) { toast(mode === 'wrong' ? '错题本是空的' : '没有可背的词'); return; }
 
@@ -2517,10 +2526,11 @@ function paintBtns(){
   if (!s || !cur) return;
   const marked = s.results[cur.w] === 'm';
   const m = $('#btn-miss'), n = $('#btn-next');
-  m.disabled = marked;
+  m.disabled = false;
   m.textContent = marked ? '已记录' : '不会';
+  m.classList.toggle('on', marked);
   n.textContent = marked ? '下一个' : '会了';
-  $('#s-hint').textContent = marked ? '已记入错题本 · 看完点「下一个」' : '';
+  $('#s-hint').textContent = marked ? '已记入错题本 · 再点一次「已记录」可取消' : '';
   $('#paper').classList.toggle('missed', marked);
   const p = progressOf(s);
   $('#s-title').textContent = titleFor(s) + ' · ' + (p.cur+1) + '/' + p.total;
@@ -2564,7 +2574,7 @@ function onMiss(){
   if (s.results[cur.w] === 'm') return;
   pushHist();
   s.results[cur.w] = 'm';
-  s.missed.push(cur.w);
+  if (s.missed.indexOf(cur.w) < 0) s.missed.push(cur.w);
   const r = rec(cur.w);
   r.miss = (r.miss||0) + 1;
   r.streak = 0;
@@ -2574,6 +2584,32 @@ function onMiss(){
   paintBtns();
   save();
   vibrate(20);
+}
+
+function onUnmark(){
+  const s = S.sessions[curMode];
+  if (!s || !cur) return;
+  if (s.results[cur.w] !== 'm') return;
+  const h = hists[curMode] || [];
+  const top = h[h.length - 1];
+  if (top && top.w === cur.w && top.st === null) {
+    h.pop();
+    S.records[cur.w] = Object.assign({}, top.rec);
+    s.known = top.known;
+    s.missed = top.missed;
+  } else {
+    const r = rec(cur.w);
+    r.miss = Math.max(0, (r.miss || 0) - 1);
+    s.missed = s.missed.filter(w => w !== cur.w);
+  }
+  delete s.results[cur.w];
+  const k = todayKey();
+  if (S.days[k]) S.days[k] = Math.max(0, S.days[k] - 1);
+  save();
+  setRev(false);
+  paintBtns();
+  toast('已取消标记');
+  vibrate(10);
 }
 
 function onKnow(){
@@ -2715,7 +2751,7 @@ function openWrong(){
   }
   const btn = $('#w-start');
   btn.disabled = !list.length;
-  btn.textContent = list.length ? ('开始复习 · ' + list.length + ' 词（乱序）') : '暂无可复习的词';
+  btn.textContent = list.length ? ('乱序考核 · ' + list.length + ' 词') : '暂无可考核的词';
   route('wrong');
 }
 
@@ -2837,7 +2873,11 @@ $('#w-back').onclick = goHome;
 $('#r-home').onclick = goHome;
 
 $('#btn-back').onclick = () => { save(); goHome(); };
-$('#btn-miss').onclick = onMiss;
+$('#btn-miss').onclick = () => {
+  const s = S.sessions[curMode];
+  if (s && cur && s.results[cur.w] === 'm') onUnmark();
+  else onMiss();
+};
 $('#btn-next').onclick = onKnow;
 $('#btn-prev').onclick = onUndo;
 $('#paper').onclick = () => setRev(!revealed);
@@ -2864,15 +2904,33 @@ $('#imp-btn').onclick = () => {
   goHome();
 };
 
-$('#bak-exp').onclick = () => {
+$('#bak-exp').onclick = async () => {
   const data = { v:1, orderFrom:S.orderFrom, records:S.records, days:S.days };
+  const text = JSON.stringify(data);
   const el = $('#bak');
-  el.value = JSON.stringify(data);
-  el.focus();
-  el.select();
-  let copied = false;
-  try { copied = document.execCommand('copy'); } catch (e) {}
-  toast(copied ? '备份已生成并复制' : '备份已生成，长按文本框全选复制');
+  el.value = text;
+  try { el.focus(); el.setSelectionRange(0, text.length); } catch (e) {}
+
+  // 1) 系统分享菜单（iPhone 上最可靠：可直接存备忘录 / 发微信）
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '遮词备份', text: text });
+      toast('已分享');
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+  // 2) 剪贴板 API（需要 HTTPS，GitHub Pages 满足）
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('备份已复制，粘贴到备忘录或微信里');
+    return;
+  } catch (e) {}
+  // 3) 老办法
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) {}
+  toast(ok ? '备份已复制' : '备份已生成，长按下面的文字全选复制');
 };
 
 $('#bak-imp').onclick = () => {
