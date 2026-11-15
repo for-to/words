@@ -129,6 +129,8 @@ button:focus-visible,.paper:focus-visible{outline:2px solid var(--ink);outline-o
 .x{width:26px;height:26px;border:none;background:transparent;color:var(--ink2);font-size:15px;flex:none;opacity:.55}
 .bottom{flex:none;display:flex;flex-direction:column;gap:8px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
 .bottom-note{font-size:11.5px;color:var(--ink2);text-align:center;margin-bottom:2px}
+.resume-row{display:flex;align-items:center;width:100%;padding:14px 16px;margin-bottom:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13.5px;color:var(--ink2);text-align:left}
+.resume-row b{margin-left:auto;color:var(--ink);font-weight:600}
 .abtn{width:100%;height:52px;border-radius:12px;border:1px solid transparent;font-size:16px;font-weight:600;transition:transform .08s ease}
 .abtn:active{transform:scale(.985)}
 .abtn.pri{background:var(--ink);color:var(--bg)}
@@ -253,7 +255,7 @@ textarea{width:100%;height:150px;padding:12px;border-radius:12px;border:1px soli
       <div class="hd-t center">错题本 <span id="w-count" style="color:var(--ink2);font-weight:400">0</span></div>
       <button class="tx" id="w-clear">清空</button>
     </div>
-    <div class="scroll"><div id="w-list"></div></div>
+    <div class="scroll"><div id="w-resume"></div><div id="w-list"></div></div>
     <div class="bottom"><div class="bottom-note">每次重新打乱 · 同一个词一轮只出现一次</div><button class="abtn pri" id="w-start">乱序考核</button></div>
   </section>
 
@@ -2462,10 +2464,10 @@ function renderHome(){
   $('#h-wrong').textContent = wl.length;
   $('#h-today').textContent = S.days[todayKey()] || 0;
 
-  const so = S.sessions.order, ss = S.sessions.shuffle, sw = S.sessions.wrong;
-  setSt('#order-st', so ? posText(so) : '›', !!so);
-  setSt('#shuffle-st', ss ? posText(ss) : '›', !!ss);
-  setSt('#wrong-st', sw ? posText(sw) : (wl.length ? String(wl.length) : '›'), !!(sw || wl.length));
+  const so = S.sessions.order, ss = S.sessions.shuffle;
+  setSt('#order-st', so ? posText(so) : (S.orderFrom > 0 ? (S.orderFrom + 1) + '/' + WORDS.length : '›'), !!(so || S.orderFrom > 0));
+  setSt('#shuffle-st', (ss && ss.pos > 0) ? posText(ss) : '›', !!(ss && ss.pos > 0));
+  setSt('#wrong-st', wl.length ? String(wl.length) : '›', !!wl.length);
 
   route('home');
 }
@@ -2717,6 +2719,22 @@ function renderResult(){
 function openWrong(){
   const list = wrongList();
   $('#w-count').textContent = list.length;
+
+  const sw = S.sessions.wrong;
+  const rb = $('#w-resume');
+  rb.innerHTML = '';
+  if (sw && sw.pos < sw.list.length) {
+    const b = document.createElement('button');
+    b.className = 'resume-row';
+    const span = document.createElement('span');
+    span.textContent = '上次考核中断在 ' + (sw.pos + 1) + ' / ' + sw.list.length + ' 个';
+    const strong = document.createElement('b');
+    strong.textContent = '继续';
+    b.appendChild(span); b.appendChild(strong);
+    b.onclick = () => openSession('wrong');
+    rb.appendChild(b);
+  }
+
   const box = $('#w-list');
   box.innerHTML = '';
   if (!list.length) {
@@ -2862,11 +2880,7 @@ function parseDeck(text){
 /* ================= 绑定 ================= */
 $('#btn-order').onclick = () => S.sessions.order ? openSession('order') : start('order');
 $('#btn-shuffle').onclick = () => S.sessions.shuffle ? openSession('shuffle') : start('shuffle');
-$('#btn-wrong-mode').onclick = () => {
-  if (S.sessions.wrong) openSession('wrong');
-  else if (wrongList().length) start('wrong');
-  else openWrong();
-};
+$('#btn-wrong-mode').onclick = () => openWrong();
 $('#btn-set').onclick = openSet;
 $('#set-back').onclick = goHome;
 $('#w-back').onclick = goHome;
@@ -2887,7 +2901,11 @@ $('#jump-btn').onclick = jumpTo;
 $('#w-clear').onclick = openReset;
 $('#m-mask').onclick = closeModal;
 
-$('#w-start').onclick = () => { if (wrongList().length) start('wrong'); };
+$('#w-start').onclick = () => {
+  if (!wrongList().length) return;
+  if (S.sessions.wrong && !confirm('重新开始会把上次中断的考核覆盖掉，继续？')) return;
+  start('wrong');
+};
 
 $('#imp-btn').onclick = () => {
   const arr = parseDeck($('#imp').value || '');
